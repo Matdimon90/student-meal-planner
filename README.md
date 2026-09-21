@@ -14,7 +14,7 @@ If the budget is not realistic, the app must say so and suggest adjustments inst
 ## Team
 
 - Matteo Asscher (@Matdimon90)
-- Oscar (GitHub handle to add)
+- Oscar (@oskr-kal)
 - Tom (GitHub handle to add)
 
 ## Current scope (MVP)

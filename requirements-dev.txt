@@ -1,0 +1,2 @@
+# Tools needed to work on the project (not needed to run the app)
+pytest

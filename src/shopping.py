@@ -37,6 +37,14 @@ class Product:
     package_price_cents: int
     package_size: float
     package_unit: str  # "kg", "l" or "ud"
+    category: str = ""
+    diet: str = "vegan"  # "vegan", "vegetarian", "fish" or "meat"
+    allergens: frozenset = frozenset()
+
+    @property
+    def recipe_unit(self) -> str:
+        """The unit recipes must use for this product: g, ml or ud."""
+        return TO_BASE_UNIT[self.package_unit][0]
 
 
 @dataclass(frozen=True)

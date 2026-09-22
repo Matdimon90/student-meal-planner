@@ -1,0 +1,164 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1560,
+   "title": "1 · Empty state"
+  },
+  "Loading.dc.html": {
+   "x": 1360,
+   "y": 0,
+   "w": 1280,
+   "h": 1560,
+   "title": "2 · Loading"
+  },
+  "WithinBudget.dc.html": {
+   "x": 2720,
+   "y": 0,
+   "w": 1280,
+   "h": 4560,
+   "title": "3 · Within budget"
+  },
+  "OverBudget.dc.html": {
+   "x": 4080,
+   "y": 0,
+   "w": 1280,
+   "h": 4640,
+   "title": "4 · Over budget"
+  },
+  "NotRealistic.dc.html": {
+   "x": 5440,
+   "y": 0,
+   "w": 1280,
+   "h": 1560,
+   "title": "5 · Not realistic"
+  },
+  "MobileEmpty.dc.html": {
+   "x": 0,
+   "y": 4983,
+   "w": 390,
+   "h": 2760,
+   "title": "6a · Mobile empty"
+  },
+  "MobileWithin.dc.html": {
+   "x": 470,
+   "y": 4983,
+   "w": 390,
+   "h": 6300,
+   "title": "6b · Mobile within budget"
+  },
+  "MobileOver.dc.html": {
+   "x": 940,
+   "y": 4983,
+   "w": 390,
+   "h": 6600,
+   "title": "6c · Mobile over budget"
+  },
+  "MobileNotRealistic.dc.html": {
+   "x": 1410,
+   "y": 4983,
+   "w": 390,
+   "h": 1500,
+   "title": "6d · Mobile not realistic"
+  },
+  "DarkWithinES.dc.html": {
+   "x": 0,
+   "y": 11926,
+   "w": 1280,
+   "h": 4560,
+   "title": "Dark · ES · Within budget"
+  },
+  "DarkMobileES.dc.html": {
+   "x": 1360,
+   "y": 11926,
+   "w": 390,
+   "h": 6300,
+   "title": "Dark · ES · Mobile result"
+  },
+  "DarkMobileEmptyES.dc.html": {
+   "x": 1830,
+   "y": 11926,
+   "w": 390,
+   "h": 2760,
+   "title": "Dark · ES · Mobile empty"
+  },
+  "PrintReceipt.dc.html": {
+   "x": 2300,
+   "y": 11926,
+   "w": 794,
+   "h": 1123,
+   "title": "Print · A4 receipt",
+   "paper": "a4",
+   "print": "flow"
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-09-22T09:57:44Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "view": "canvas"
+ },
+ "notes": {
+  "t1": {
+   "x": 0,
+   "y": -300,
+   "text": "Desktop · light · EN — form left, results right",
+   "kind": "title1",
+   "maxW": 6720,
+   "w": 240
+  },
+  "t2": {
+   "x": 0,
+   "y": 4683,
+   "text": "Mobile · light · EN — 390 wide",
+   "kind": "title1",
+   "maxW": 1800,
+   "w": 240
+  },
+  "t3": {
+   "x": 0,
+   "y": 11626,
+   "text": "Dark mode · Español · Print",
+   "kind": "title1",
+   "maxW": 3100,
+   "w": 240
+  },
+  "s1": {
+   "x": 1900,
+   "y": 5023,
+   "w": 340,
+   "text": "Threaded Pantry: the braid in the hero, the loading frame and the reuse map is one seeded algorithm. Strand = ingredient, knot = cooked that day, amber bead = leftover, dashed lead-in = already at home. Same seed, same drawing.",
+   "fill": "green"
+  },
+  "s2": {
+   "x": 1900,
+   "y": 5383,
+   "w": 340,
+   "text": "Form: quick-start presets, and a live hint under the budget that turns into a warning below the €0.85 per-meal floor — so 'not realistic' is visible before you submit.",
+   "fill": "orange"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Loading.dc.html",
+  "WithinBudget.dc.html",
+  "OverBudget.dc.html",
+  "NotRealistic.dc.html",
+  "MobileEmpty.dc.html",
+  "MobileWithin.dc.html",
+  "MobileOver.dc.html",
+  "MobileNotRealistic.dc.html",
+  "DarkWithinES.dc.html",
+  "DarkMobileES.dc.html",
+  "DarkMobileEmptyES.dc.html",
+  "PrintReceipt.dc.html"
+ ],
+ "pages": [],
+ "title": "Student Meal Planner"
+}

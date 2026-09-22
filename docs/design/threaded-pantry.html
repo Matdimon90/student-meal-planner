@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threaded Pantry</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --anthropic-dark: #141413;
+            --anthropic-light: #faf9f5;
+            --anthropic-mid-gray: #b0aea5;
+            --anthropic-light-gray: #e8e6dc;
+            --anthropic-orange: #d97757;
+            --anthropic-blue: #6a9bcc;
+            --anthropic-green: #788c5d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--anthropic-light) 0%, #f5f3ee 100%);
+            min-height: 100vh;
+            color: var(--anthropic-dark);
+        }
+        .container { display: flex; min-height: 100vh; padding: 20px; gap: 20px; }
+        .sidebar {
+            width: 320px; flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 24px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(20, 20, 19, 0.1);
+            overflow-y: auto; overflow-x: hidden;
+        }
+        .sidebar h1 { font-family: 'Lora', serif; font-size: 24px; font-weight: 500; color: var(--anthropic-dark); margin-bottom: 8px; }
+        .sidebar .subtitle { color: var(--anthropic-mid-gray); font-size: 14px; margin-bottom: 32px; line-height: 1.4; }
+        .control-section { margin-bottom: 32px; }
+        .control-section h3 { font-size: 16px; font-weight: 600; color: var(--anthropic-dark); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .control-section h3::before { content: '•'; color: var(--anthropic-orange); font-weight: bold; }
+        .seed-input {
+            width: 100%; background: var(--anthropic-light); padding: 12px; border-radius: 8px;
+            font-family: 'Courier New', monospace; font-size: 14px; margin-bottom: 12px;
+            border: 1px solid var(--anthropic-light-gray); text-align: center;
+        }
+        .seed-input:focus { outline: none; border-color: var(--anthropic-orange); box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.1); background: white; }
+        .seed-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .regen-button { margin-bottom: 0; }
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; font-size: 14px; font-weight: 500; color: var(--anthropic-dark); margin-bottom: 8px; }
+        .slider-container { display: flex; align-items: center; gap: 12px; }
+        .slider-container input[type="range"] { flex: 1; height: 4px; background: var(--anthropic-light-gray); border-radius: 2px; outline: none; -webkit-appearance: none; }
+        .slider-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; background: var(--anthropic-orange); border-radius: 50%; cursor: pointer; transition: all 0.2s ease; }
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.1); background: #c86641; }
+        .slider-container input[type="range"]::-moz-range-thumb { width: 16px; height: 16px; background: var(--anthropic-orange); border-radius: 50%; border: none; cursor: pointer; }
+        .value-display { font-family: 'Courier New', monospace; font-size: 12px; color: var(--anthropic-mid-gray); min-width: 60px; text-align: right; }
+        .color-group { margin-bottom: 16px; }
+        .color-group label { display: block; font-size: 12px; color: var(--anthropic-mid-gray); margin-bottom: 4px; }
+        .color-picker-container { display: flex; align-items: center; gap: 8px; }
+        .color-picker-container input[type="color"] { width: 32px; height: 32px; border: none; border-radius: 6px; cursor: pointer; background: none; padding: 0; }
+        .color-value { font-family: 'Courier New', monospace; font-size: 12px; color: var(--anthropic-mid-gray); }
+        .button { background: var(--anthropic-orange); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; width: 100%; }
+        .button:hover { background: #c86641; transform: translateY(-1px); }
+        .button:active { transform: translateY(0); }
+        .button.secondary { background: var(--anthropic-blue); }
+        .button.secondary:hover { background: #5a8bb8; }
+        .button.tertiary { background: var(--anthropic-green); }
+        .button.tertiary:hover { background: #6b7b52; }
+        .button-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .button-row .button { flex: 1; }
+        .canvas-area { flex: 1; display: flex; align-items: center; justify-content: center; min-width: 0; }
+        #canvas-container { width: 100%; max-width: 1000px; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(20, 20, 19, 0.1); background: white; }
+        #canvas-container canvas { display: block; width: 100% !important; height: auto !important; }
+        .loading { display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--anthropic-mid-gray); padding: 40px; }
+        @media (max-width: 600px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; }
+            .canvas-area { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>Threaded Pantry</h1>
+            <div class="subtitle">Every ingredient is a strand: it opens on a day, runs through the days it is cooked, and either ends clean or trails off as a leftover. Same seed, same week.</div>
+
+            <div class="control-section">
+                <h3>Seed</h3>
+                <input type="number" id="seed-input" class="seed-input" value="2209" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button secondary" onclick="previousSeed()">← Prev</button>
+                    <button class="button secondary" onclick="nextSeed()">Next →</button>
+                </div>
+                <button class="button tertiary regen-button" onclick="randomSeedAndUpdate()">↻ Random</button>
+            </div>
+
+            <div class="control-section">
+                <h3>Parameters</h3>
+                <div class="control-group">
+                    <label>Ingredients</label>
+                    <div class="slider-container">
+                        <input type="range" id="ingredients" min="5" max="28" step="1" value="14" oninput="updateParam('ingredients', this.value)">
+                        <span class="value-display" id="ingredients-value">14</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Days</label>
+                    <div class="slider-container">
+                        <input type="range" id="days" min="2" max="7" step="1" value="5" oninput="updateParam('days', this.value)">
+                        <span class="value-display" id="days-value">5</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Reuse tendency</label>
+                    <div class="slider-container">
+                        <input type="range" id="reuse" min="0" max="1" step="0.05" value="0.65" oninput="updateParam('reuse', this.value)">
+                        <span class="value-display" id="reuse-value">0.65</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Leftover rate</label>
+                    <div class="slider-container">
+                        <input type="range" id="leftover" min="0" max="1" step="0.05" value="0.55" oninput="updateParam('leftover', this.value)">
+                        <span class="value-display" id="leftover-value">0.55</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Pantry share (already at home)</label>
+                    <div class="slider-container">
+                        <input type="range" id="pantry" min="0" max="0.6" step="0.05" value="0.15" oninput="updateParam('pantry', this.value)">
+                        <span class="value-display" id="pantry-value">0.15</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Strand weight</label>
+                    <div class="slider-container">
+                        <input type="range" id="weight" min="0.4" max="2.2" step="0.1" value="1.0" oninput="updateParam('weight', this.value)">
+                        <span class="value-display" id="weight-value">1.0</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Curve tension</label>
+                    <div class="slider-container">
+                        <input type="range" id="tension" min="0.15" max="0.7" step="0.01" value="0.42" oninput="updateParam('tension', this.value)">
+                        <span class="value-display" id="tension-value">0.42</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label>Draw speed (0 = instant)</label>
+                    <div class="slider-container">
+                        <input type="range" id="speed" min="0" max="3" step="0.1" value="1.2" oninput="updateParam('speed', this.value)">
+                        <span class="value-display" id="speed-value">1.2</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Colors</h3>
+                <div class="color-group">
+                    <label>Paper</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="color1" value="#f4eddf" onchange="updateColor('color1', this.value)">
+                        <span class="color-value" id="color1-value">#f4eddf</span>
+                    </div>
+                </div>
+                <div class="color-group">
+                    <label>Strand (deep green)</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="color2" value="#1e5a3a" onchange="updateColor('color2', this.value)">
+                        <span class="color-value" id="color2-value">#1e5a3a</span>
+                    </div>
+                </div>
+                <div class="color-group">
+                    <label>Leftover (amber)</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="color3" value="#b8791a" onchange="updateColor('color3', this.value)">
+                        <span class="color-value" id="color3-value">#b8791a</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Actions</h3>
+                <div class="button-row">
+                    <button class="button" onclick="regenerate()">Regenerate</button>
+                    <button class="button" onclick="resetParameters()">Reset</button>
+                </div>
+                <div class="button-row">
+                    <button class="button tertiary" onclick="downloadPNG()">Download PNG</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">Threading the week…</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
+        let params = {
+            seed: 2209,
+            ingredients: 14,
+            days: 5,
+            reuse: 0.65,
+            leftover: 0.55,
+            pantry: 0.15,
+            weight: 1.0,
+            tension: 0.42,
+            speed: 1.2,
+            colorPalette: ['#f4eddf', '#1e5a3a', '#b8791a']
+        };
+        let defaultParams = JSON.parse(JSON.stringify(params));
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // THREADED PANTRY — the algorithm
+        // ═══════════════════════════════════════════════════════════════════════
+        const W = 1200, H = 800;
+        const MX = 90, MT = 90, MB = 110;   // margins: left/right, top, bottom
+        let strands = [];
+        let lanes = [];      // lanes[d] = array of {id, y}
+        let progress = 1;    // 0..1 sweep of the pen line
+        let inkGreen, inkAmber, paper;
+
+        function setup() {
+            const canvas = createCanvas(W, H);
+            canvas.parent('canvas-container');
+            pixelDensity(2);
+            initializeSystem();
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function initializeSystem() {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+            paper = color(params.colorPalette[0]);
+            inkGreen = color(params.colorPalette[1]);
+            inkAmber = color(params.colorPalette[2]);
+            strands = generateStrands();
+            lanes = layoutLanes(strands);
+            progress = params.speed > 0 ? 0 : 1;
+            loop();
+        }
+
+        // Each strand: {open, last, uses:Set, weight, leftover, home}
+        function generateStrands() {
+            const D = params.days, N = params.ingredients;
+            const out = [];
+            for (let i = 0; i < N; i++) {
+                const w = 0.22 + Math.pow(random(), 1.5) * 0.78;      // power curve: few heavy, many light
+                const home = random() < params.pantry;
+                const open = home ? 0 : Math.floor(Math.pow(random(), 1.3) * D);   // bias toward opening early
+                const maxSpan = D - open;
+                const spanExp = 1.7 - params.reuse * 1.3;                // high reuse → longer spans
+                let span = 1 + Math.floor(Math.pow(random(), spanExp) * maxSpan);
+                if (home) span = Math.max(span, Math.min(D, 2 + Math.floor(random() * D)));
+                span = Math.min(span, maxSpan);
+                const last = open + span - 1;
+                const uses = new Set([open, last]);
+                for (let d = open + 1; d < last; d++) if (random() < params.reuse * 0.8) uses.add(d);
+                const lo = random() < params.leftover ? 0.12 + random() * 0.6 : 0;
+                out.push({ id: i, open, last, uses, weight: w, leftover: home ? lo * 0.5 : lo, home });
+            }
+            // stable order: by opening day, then heavy first — this is what makes the braid relax
+            out.sort((a, b) => a.open - b.open || b.weight - a.weight);
+            out.forEach((s, i) => s.id = i);
+            return out;
+        }
+
+        function dayX(d) {
+            const D = params.days;
+            return MX + (W - 2 * MX) * (D === 1 ? 0.5 : d / (D - 1));
+        }
+
+        // Recompute lanes for every day from the strands alive on it.
+        function layoutLanes(list) {
+            const D = params.days;
+            const res = [];
+            const top = MT, bottom = H - MB;
+            for (let d = 0; d < D; d++) {
+                const alive = list.filter(s => s.open <= d && s.last >= d);
+                const n = alive.length;
+                const totalW = alive.reduce((a, s) => a + s.weight, 0) || 1;
+                // weighted lanes: heavier strands take more vertical room
+                let y = top;
+                const usable = bottom - top;
+                const laneMap = {};
+                alive.forEach(s => {
+                    const h = usable * (0.35 / Math.max(n, 1) + 0.65 * s.weight / totalW);
+                    laneMap[s.id] = y + h / 2;
+                    y += h;
+                });
+                // center the block vertically
+                const shift = (usable - (y - top)) / 2;
+                for (const k in laneMap) laneMap[k] += shift;
+                res.push(laneMap);
+            }
+            return res;
+        }
+
+        function strokeW(s) { return (2.2 + Math.pow(s.weight, 1.2) * 13) * params.weight; }
+
+        function draw() {
+            background(paper);
+            drawDayRules();
+            const penX = MX * 0.4 + (W - MX * 0.4 * 2 + 60) * progress;
+            for (const s of strands) drawStrand(s, penX);
+            if (progress < 1) {
+                stroke(red(inkGreen), green(inkGreen), blue(inkGreen), 120);
+                strokeWeight(1.5);
+                line(penX, MT - 30, penX, H - MB + 30);
+            }
+            drawLegend();
+            if (progress >= 1) { noLoop(); return; }
+            progress = Math.min(1, progress + 0.004 * params.speed);
+        }
+
+        function drawDayRules() {
+            const D = params.days;
+            textFont('Courier New');
+            for (let d = 0; d < D; d++) {
+                const x = dayX(d);
+                stroke(red(inkGreen), green(inkGreen), blue(inkGreen), 55);
+                strokeWeight(1);
+                for (let y = MT - 30; y < H - MB + 30; y += 9) point(x, y);
+                noStroke();
+                fill(red(inkGreen), green(inkGreen), blue(inkGreen), 170);
+                textAlign(CENTER, TOP);
+                textSize(13);
+                text('DAY ' + (d + 1), x, H - MB + 44);
+            }
+        }
+
+        function drawStrand(s, penX) {
+            const pts = [];
+            for (let d = s.open; d <= s.last; d++) pts.push({ x: dayX(d), y: lanes[d][s.id] });
+            const sw = strokeW(s);
+            const alpha = 190 + s.weight * 60;
+            noFill();
+            strokeCap(ROUND);
+            strokeJoin(ROUND);
+
+            // pantry lead-in: dashed from the left edge
+            if (s.home) {
+                stroke(red(inkGreen), green(inkGreen), blue(inkGreen), 110);
+                strokeWeight(Math.max(1.5, sw * 0.5));
+                const y0 = pts[0].y;
+                for (let x = 18; x < pts[0].x - 10; x += 14) if (x + 7 < penX) line(x, y0, x + 7, y0);
+            }
+
+            // body: cubic segments with horizontal tangents, sampled so the pen can cut them
+            stroke(red(inkGreen), green(inkGreen), blue(inkGreen), alpha);
+            strokeWeight(sw);
+            const t = params.tension;
+            for (let i = 0; i < pts.length - 1; i++) {
+                const a = pts[i], b = pts[i + 1];
+                const dx = (b.x - a.x) * t;
+                if (b.x <= penX) {
+                    bezier(a.x, a.y, a.x + dx, a.y, b.x - dx, b.y, b.x, b.y);
+                } else if (a.x < penX) {
+                    beginShape();
+                    for (let k = 0; k <= 40; k++) {
+                        const u = k / 40;
+                        const x = bezierPoint(a.x, a.x + dx, b.x - dx, b.x, u);
+                        if (x > penX) break;
+                        vertex(x, bezierPoint(a.y, a.y, b.y, b.y, u));
+                    }
+                    endShape();
+                }
+            }
+            const endX = pts[pts.length - 1].x, endY = pts[pts.length - 1].y;
+
+            // leftover tail: the strand does not stop, it falls away and beads
+            if (s.leftover > 0 && endX + 8 < penX) {
+                const len = 26 + s.leftover * 60;
+                const drop = 14 + s.leftover * 40;
+                stroke(red(inkAmber), green(inkAmber), blue(inkAmber), 220);
+                strokeWeight(Math.max(1.6, sw * 0.45));
+                noFill();
+                bezier(endX, endY, endX + len * 0.55, endY, endX + len * 0.7, endY + drop * 0.7, endX + len, endY + drop);
+                noStroke();
+                fill(inkAmber);
+                circle(endX + len, endY + drop, 5 + s.leftover * 16);
+            } else if (endX <= penX && !s.home) {
+                // clean end: a solid full stop
+                noStroke();
+                fill(red(inkGreen), green(inkGreen), blue(inkGreen), alpha);
+                circle(endX, endY, sw * 1.05);
+            }
+
+            // knots: hollow nodes on every day the strand is cooked
+            for (const d of s.uses) {
+                const x = dayX(d);
+                if (x > penX) continue;
+                const y = lanes[d][s.id];
+                stroke(red(inkGreen), green(inkGreen), blue(inkGreen), alpha);
+                strokeWeight(Math.max(1.5, sw * 0.28));
+                fill(paper);
+                circle(x, y, Math.max(6, sw * 0.95));
+            }
+        }
+
+        function drawLegend() {
+            noStroke();
+            textFont('Georgia');
+            textStyle(ITALIC);
+            textAlign(LEFT, TOP);
+            textSize(28);
+            fill(red(inkGreen), green(inkGreen), blue(inkGreen), 235);
+            text('Threaded Pantry', MX * 0.4, 30);
+            textFont('Courier New');
+            textStyle(NORMAL);
+            textSize(12);
+            textAlign(RIGHT, TOP);
+            const alive = strands.length;
+            const reused = strands.filter(s => s.uses.size >= 2).length;
+            const lo = strands.filter(s => s.leftover > 0).length;
+            fill(red(inkGreen), green(inkGreen), blue(inkGreen), 170);
+            text(`${alive} INGREDIENTS · ${reused} REUSED · ${lo} LEFTOVERS · SEED ${params.seed}`, W - MX * 0.4, 38);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI HANDLERS
+        // ═══════════════════════════════════════════════════════════════════════
+        function updateParam(name, value) {
+            const v = parseFloat(value);
+            params[name] = v;
+            document.getElementById(name + '-value').textContent = Number.isInteger(v) ? v : v.toFixed(2).replace(/0$/, '');
+            initializeSystem();
+        }
+        function updateColor(id, value) {
+            const idx = { color1: 0, color2: 1, color3: 2 }[id];
+            params.colorPalette[idx] = value;
+            document.getElementById(id + '-value').textContent = value;
+            initializeSystem();
+        }
+        function regenerate() { initializeSystem(); }
+        function downloadPNG() { saveCanvas('threaded-pantry-' + params.seed, 'png'); }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SEED CONTROLS
+        // ═══════════════════════════════════════════════════════════════════════
+        function updateSeedDisplay() { document.getElementById('seed-input').value = params.seed; }
+        function updateSeed() {
+            const input = document.getElementById('seed-input');
+            const s = parseInt(input.value);
+            if (s && s > 0) { params.seed = s; initializeSystem(); } else { updateSeedDisplay(); }
+        }
+        function previousSeed() { params.seed = Math.max(1, params.seed - 1); updateSeedDisplay(); initializeSystem(); }
+        function nextSeed() { params.seed = params.seed + 1; updateSeedDisplay(); initializeSystem(); }
+        function randomSeedAndUpdate() { params.seed = Math.floor(Math.random() * 999999) + 1; updateSeedDisplay(); initializeSystem(); }
+
+        function resetParameters() {
+            params = JSON.parse(JSON.stringify(defaultParams));
+            for (const k of ['ingredients', 'days', 'reuse', 'leftover', 'pantry', 'weight', 'tension', 'speed']) {
+                document.getElementById(k).value = params[k];
+                document.getElementById(k + '-value').textContent = params[k];
+            }
+            ['color1', 'color2', 'color3'].forEach((id, i) => {
+                document.getElementById(id).value = params.colorPalette[i];
+                document.getElementById(id + '-value').textContent = params.colorPalette[i];
+            });
+            updateSeedDisplay();
+            initializeSystem();
+        }
+        window.addEventListener('load', updateSeedDisplay);
+    </script>
+</body>
+</html>

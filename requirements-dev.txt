@@ -1,2 +1,5 @@
-# Tools needed to work on the project (not needed to run the app)
+# Tools needed to work on the project (not needed by the deployed app)
+-r requirements.txt
+uvicorn
 pytest
+httpx

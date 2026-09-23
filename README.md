@@ -1,4 +1,4 @@
-# Student Meal Planner
+# Student Meal Planner for student 
 
 AI meal planner and grocery budgeting for students living in Spain.
 

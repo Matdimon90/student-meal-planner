@@ -19,7 +19,7 @@ Each version is a file in [`prompts/`](../prompts). Scores come from `python3 sc
 
 | Version | Date | json | real | safe | complete | budget | final | Total | Model calls |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| _paste the row printed by the script here, one per run_ | | | | | | | | | |
+| v1 | 2026-09-23 | 0/10 | 0/10 | 0/10 | 0/10 | 0/10 | 0/10 | 0/60 | 20 |
 
 ### Quality of the plans (not part of the score)
 
@@ -29,7 +29,7 @@ The script also prints three numbers for the plans that could be priced. They sh
 | --- | --- | --- | --- |
 | _fill in_ | | | |
 
-Model and settings used for all runs: _fill in (model name; no temperature setting exists in the current SDK, so runs are not exactly repeatable: run important comparisons twice)_.
+Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 6 s per model call.
 
 ## v1 — zero-shot baseline
 
@@ -39,9 +39,19 @@ Model and settings used for all runs: _fill in (model name; no temperature setti
 
 **What we expected.** Replies we cannot parse, invented field names, wrong units.
 
-**What happened.** _Fill in after running. Quote one bad reply._
+**What happened.** 0/60. Every reply was JSON, but every reply used a different shape invented by the model (`meal_plan.meals[]`, `meal_plan.day_1.lunch`, `dinners[]`), none had our `feasible` key, so our parser rejected all 10 first replies and all 10 repair attempts (20 calls for zero usable plans). Ingredients came as free text with quantities inside the string, and the model invented prices. Extract from the `basic` case:
 
-**What we changed next and why.** _Fill in._
+```json
+"lunch": {
+  "name": "Lentil and Vegetable Soup",
+  "ingredients": ["lentils_dry (150g)", "onions (1)", "carrots (2)", "chicken_stock (1L)", "olive_oil (2 tbsp)", "salt"],
+  "cost": "€2.50"
+}
+```
+
+On `impossible_budget` (15 EUR, 4 people, 7 days) it produced a full 21-meal plan without any warning.
+
+**What we changed next and why.** Since the failure is 100% format, v2 gives the exact JSON shape with field names and types, a fixed unit per ingredient (g, ml or units), and forbids free text and prices in the reply. Nothing else changes, so any gain in v2 is attributable to the format alone.
 
 ## v2 — structured output
 

@@ -107,3 +107,19 @@ Every string exists in EN and ES (all copy is in `mockups/generate_mockups.py`, 
 6. Make the receipt a 5-column till (Need / Buy / Left / €) grouped by aisle, with `at home` rows and a Print view.
 7. Add the "What you can change" card for over budget, and the 2×2 options grid for not realistic.
 8. Presets + live hint under the budget field.
+
+## 7. Added after the first live test (2026-09-23): landing page and week board
+
+Feedback from the team: the app opened straight on the form, and the day-by-day list did not give a picture of the week.
+
+### Landing page (`#welcome`)
+Shown on every load, before the dashboard. Kicker in mono caps, Fraunces italic headline ("Eat well all week on a student budget."), one-sentence lead, then a **supermarket grid** (4 columns ≥1100px, 2 columns ≥700px, 1 column on phones). One card per supermarket: a 44px coloured mark with the initial (no logos), the name in Fraunces 24px, a mono status line, and a green call to action. Only Mercadona is enabled: its status line is generated from `/api/options` ("86 products · prices captured 2026-09-21 · zone mad1"). Dia, Carrefour and Lidl are disabled with a "Coming soon" badge and the honest note "Same data format. Prices not loaded yet." Under the grid, three short value props (Whole packages / Honest verdict / Reuse first). Choosing a supermarket hides the landing, shows the dashboard and puts a **shop pill** in the header (initial mark + name + "· change"); clicking the pill returns to the landing. The choice is saved in `localStorage` but the landing is still shown first on the next visit: choosing the shop is the first step of the flow.
+
+### Week board (replaces the collapsible day list)
+A grid: one column per day, one row per requested meal (breakfast / lunch / dinner). Header row: "Day n" in Fraunces italic and the mono cost of what is opened that day. Each cell is a button with the recipe name in Fraunces 17px and up to three mono pills: green `↻ ingredient` when it was opened on an earlier day, amber `ingredient →` when a leftover is kept for later. Row labels are sticky on the left; on phones the board scrolls horizontally (columns are at least 150–170px). A legend under the board explains the two pill colours. The board sits directly under the verdict and the three stats, before the reuse map, so the menu is the second thing seen.
+
+### Recipe dialog
+Tapping a cell opens a native `<dialog>` (card background, 16px radius, backdrop at 55% ink): mono caps line "Day 1 · Lunch · 2 serves", Fraunces title, two columns (ingredients with quantity and a small mono note "reused from day 1" / "leftover → 370 g" / "at home"; numbered method), and a footer with "Recipe by AI · quantities and prices by code" and a Close button. Escape, the Close button or a click on the backdrop closes it.
+
+### Header on phones
+The wordmark takes the full width; the shop pill, language switch and theme button wrap to a second row. The "· change" hint in the pill is hidden under 600px.

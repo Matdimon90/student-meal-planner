@@ -46,10 +46,39 @@
   .btn:hover { border-color:var(--ink); }
   .btn.primary { background:var(--green); color:var(--on-green); border-color:var(--green); }
 
+  /* landing */
+  .welcome { padding:18px 0 0; }
+  .welcome .kicker { color:var(--muted); font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+  .welcome h1 { font-size:40px; line-height:1.05; margin:10px 0 12px; font-style:italic; max-width:16ch; }
+  @media (min-width:960px) { .welcome h1 { font-size:64px; } }
+  .welcome .lead { color:var(--muted); font-size:18px; max-width:56ch; margin:0 0 28px; }
+  .shops { display:grid; gap:14px; }
+  @media (min-width:700px) { .shops { grid-template-columns:repeat(2,1fr); } }
+  @media (min-width:1100px) { .shops { grid-template-columns:repeat(4,1fr); } }
+  .shop { text-align:left; background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; min-height:180px; display:flex; flex-direction:column; gap:8px; position:relative; transition:transform .15s, border-color .15s, box-shadow .15s; }
+  .shop:not([disabled]):hover { border-color:var(--green); transform:translateY(-2px); box-shadow:0 10px 30px rgba(0,0,0,.08); }
+  .shop[disabled] { cursor:not-allowed; opacity:.55; }
+  .shop .mark { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; font-family:var(--serif); font-weight:600; font-size:22px; color:#fff; }
+  .shop .nm { font-family:var(--serif); font-size:24px; font-weight:600; }
+  .shop .st { font-family:var(--mono); font-size:12px; color:var(--muted); line-height:1.4; }
+  .shop .st.ok { color:var(--green-ink); }
+  .shop .cta { margin-top:auto; font-weight:600; color:var(--green-ink); }
+  .shop .soon { position:absolute; top:14px; right:14px; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; background:var(--field); padding:4px 8px; border-radius:6px; color:var(--muted); }
+  .props { display:grid; gap:14px; margin-top:32px; padding-top:24px; border-top:1px solid var(--line); }
+  @media (min-width:700px) { .props { grid-template-columns:repeat(3,1fr); } }
+  .prop b { display:block; font-family:var(--serif); font-size:20px; margin-bottom:4px; } .prop span { color:var(--muted); font-size:14px; }
+  .shoppill { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--card); border-radius:999px; padding:0 14px 0 6px; min-height:44px; font-weight:600; }
+  .shoppill:hover { border-color:var(--ink); }
+  .shoppill i { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; color:#fff; font-family:var(--serif); font-style:normal; font-size:15px; }
+  .shoppill small { color:var(--muted); font-weight:400; font-family:var(--mono); font-size:12px; }
+  @media (max-width:600px) { .shoppill small { display:none; } }
+
   /* header */
-  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0 10px; }
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 0 10px; flex-wrap:wrap; }
+  .tools { margin-left:auto; }
+  @media (max-width:600px) { .top { padding-top:14px; } .brand { width:100%; } .tools { margin-left:0; } }
   .brand { display:flex; align-items:baseline; gap:12px; }
-  .brand b { font-family:var(--serif); font-style:italic; font-weight:600; font-size:26px; }
+  .brand b { font-family:var(--serif); font-style:italic; font-weight:600; font-size:26px; white-space:nowrap; }
   .brand span { color:var(--muted); font-family:var(--mono); font-size:12px; letter-spacing:.06em; }
   .tools { display:flex; align-items:center; gap:10px; }
   .lang { display:inline-flex; border:1px solid var(--line); border-radius:999px; padding:3px; background:var(--card); }
@@ -60,6 +89,7 @@
 
   /* layout */
   .layout { display:grid; gap:24px; }
+  .layout > * { min-width:0; }
   @media (min-width:960px) { .layout { grid-template-columns:420px 1fr; gap:40px; align-items:start; } .form-col { position:sticky; top:16px; } }
   .form-col.busy { opacity:.55; pointer-events:none; }
 
@@ -187,23 +217,28 @@
   @media (min-width:960px) { .nr h2 { font-size:44px; } }
   .why { margin:0; padding-left:22px; } .why li { margin:6px 0; }
 
-  /* day plan */
-  .day { margin-top:22px; } .day:first-of-type { margin-top:6px; }
-  .dayhead { display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:6px; margin-bottom:6px; }
-  .dayhead b { font-family:var(--serif); font-style:italic; font-weight:600; font-size:20px; } .dayhead span { font-family:var(--mono); font-size:13px; color:var(--muted); }
-  .meal { border:0; background:transparent; width:100%; text-align:left; display:grid; grid-template-columns:64px 1fr; gap:10px; align-items:start; padding:12px 0; border-top:1px solid var(--line); min-height:56px; }
-  .meal:first-of-type { border-top:0; }
-  @media (max-width:600px) { .meal { grid-template-columns:52px 1fr; } }
-  .meal .lab { font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); padding-top:6px; }
-  .meal .name { font-family:var(--serif); font-size:20px; font-weight:600; display:block; }
-  .pills { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-  .pill { font-family:var(--mono); font-size:12px; border-radius:999px; padding:3px 9px; background:var(--field); color:var(--muted); }
-  .pill.re { background:var(--green-soft); color:var(--green-ink); } .pill.lo { background:var(--amber-soft); color:var(--amber); }
-  .body { display:grid; gap:16px; padding:0 0 16px 74px; }
-  @media (min-width:700px) { .body { grid-template-columns:220px 1fr; } }
-  @media (max-width:600px) { .body { padding-left:0; } }
-  .body h4 { margin:0 0 6px; font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
-  .body ul, .body ol { margin:0; padding-left:18px; } .body li { margin:3px 0; }
+  /* week board */
+  .weekwrap { overflow-x:auto; margin:10px -22px 0; padding:0 22px; -webkit-overflow-scrolling:touch; }
+  .week { display:grid; gap:6px; }
+  .week .dh { text-align:center; padding:6px 4px 8px; border-bottom:1px solid var(--line); }
+  .week .dh b { font-family:var(--serif); font-style:italic; font-size:18px; display:block; } .week .dh span { font-family:var(--mono); font-size:12px; color:var(--muted); }
+  .week .rl { position:sticky; left:0; background:var(--card); font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; z-index:1; }
+  .cell { text-align:left; border:1px solid var(--line); background:var(--field); border-radius:12px; padding:12px; min-height:104px; display:flex; flex-direction:column; gap:8px; transition:border-color .15s, transform .15s; }
+  .cell:hover { border-color:var(--green); transform:translateY(-1px); }
+  .cell .nm { font-family:var(--serif); font-size:17px; font-weight:600; line-height:1.15; }
+  .cell .meta { margin-top:auto; display:flex; gap:5px; flex-wrap:wrap; }
+  .cell .meta span { font-family:var(--mono); font-size:11px; padding:2px 7px; border-radius:999px; background:var(--card); color:var(--muted); white-space:nowrap; }
+  .cell .meta .re { background:var(--green-soft); color:var(--green-ink); } .cell .meta .lo { background:var(--amber-soft); color:var(--amber); }
+  .wlegend { display:flex; flex-wrap:wrap; gap:14px 18px; margin-top:12px; font-size:13px; color:var(--muted); }
+  .wlegend span { display:inline-flex; align-items:center; gap:6px; } .wlegend i { font-style:normal; font-family:var(--mono); font-size:11px; padding:1px 7px; border-radius:999px; }
+  .wlegend .re { background:var(--green-soft); color:var(--green-ink); } .wlegend .lo { background:var(--amber-soft); color:var(--amber); }
+  dialog.recipe { border:1px solid var(--line); border-radius:16px; background:var(--card); color:var(--ink); padding:0; width:min(720px, calc(100% - 32px)); max-height:calc(100vh - 48px); }
+  dialog.recipe::backdrop { background:rgba(20,18,14,.55); }
+  .rcp { padding:24px; } .rcp .caps { color:var(--muted); } .rcp h2 { margin:6px 0 14px; }
+  .rcp .cols { display:grid; gap:18px; } @media (min-width:600px) { .rcp .cols { grid-template-columns:240px 1fr; } }
+  .rcp h4 { margin:0 0 6px; font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+  .rcp ul, .rcp ol { margin:0; padding-left:18px; } .rcp li { margin:4px 0; } .rcp li small { color:var(--muted); font-family:var(--mono); font-size:12px; margin-left:6px; }
+  .rcp .foot { display:flex; justify-content:space-between; align-items:center; margin-top:20px; gap:10px; flex-wrap:wrap; }
 
   /* receipt */
   .rhead { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
@@ -230,7 +265,7 @@
   @media print {
     @page { size:A4; margin:18mm; }
     body { background:#fff; color:#000; font-size:12.5px; }
-    .wrap > *:not(.layout), .form-col, .layout > #right > *:not(#receipt-card), #receipt-card > *:not(.printhead):not(.receipt), .hood, .sumbar, footer { display:none !important; }
+    .wrap > *:not(.layout), .form-col, dialog, .layout > #right > *:not(#receipt-card), #receipt-card > *:not(.printhead):not(.receipt), .hood, .sumbar, footer { display:none !important; }
     .layout { display:block; } #receipt-card { border:0; padding:0; }
     .printhead { display:block !important; }
     .receipt { background:#fff; border:0; padding:0; color:#000; font-size:12.5px; }
@@ -246,12 +281,15 @@
   <div class="top">
     <div class="brand"><b data-t="app"></b><span data-t="tag"></span></div>
     <div class="tools">
+      <button type="button" class="shoppill" id="shopBtn" hidden></button>
       <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button></div>
       <button type="button" class="theme" id="theme" aria-label="Theme"></button>
     </div>
   </div>
 
-  <div class="layout">
+  <section class="welcome" id="welcome"></section>
+
+  <div class="layout" id="app" hidden>
     <div class="form-col" id="formCol">
       <form id="form" class="card" novalidate>
         <h2 data-t="yourWeek" style="font-size:28px"></h2>
@@ -290,7 +328,8 @@
     <div id="right" aria-live="polite"></div>
   </div>
 
-  <footer id="footer"></footer>
+  <footer id="footer" hidden></footer>
+  <dialog class="recipe" id="recipe"></dialog>
 </div>
 
 <script src="braid.js"></script>
@@ -326,7 +365,11 @@ const T = {
     nrRaise:v=>`Raise the budget to ${v}`, nrRaiseNote:"Same days, same meals.", nrKeep:(b,d)=>`Keep ${b}, plan ${d} ${d>1?"days":"day"}`, nrKeepNote:"Same meals, fewer days.", nrOne:d=>`Cook for 1, ${d} ${d>1?"days":"day"}`, nrOneNote:"Everything you set, just one person.", nrHome:"Tell us what's at home", nrHomeNote:"Rice, oil, pasta already there cut the basket a lot.",
     nrNo:"No plan was generated. We'd rather say so than hand you a list you can't afford.", edit:"✎ Edit",
     hood:"Under the hood", hoodCalls:n=>`The model was called ${n} time${n>1?"s":""}. Everything else was done by code.`, invalidStep:"rejected by our checks", priced:"priced by code at", saysNo:"the model said the budget is not realistic", problems:"problems",
-    footer:(p,v)=>`Prices: ${p.supermarket}, zone ${p.zone}, captured on ${p.captured_at} (OpenCesta, ODbL). Shelf prices may differ. Allergen information is indicative: always check the label. Recipes are generated by an AI model (prompt ${v}) and are not tested in a kitchen. Totals are calculated by code.` },
+    footer:(p,v)=>`Prices: ${p.supermarket}, zone ${p.zone}, captured on ${p.captured_at} (OpenCesta, ODbL). Shelf prices may differ. Allergen information is indicative: always check the label. Recipes are generated by an AI model (prompt ${v}) and are not tested in a kitchen. Totals are calculated by code.`,
+    kicker:"Student Meal Planner · Spain", welcomeTitle:"Eat well all week on a student budget.", welcomeLead:"Pick your supermarket. The AI writes the recipes; the code prices every whole package and tells you honestly whether your budget holds.",
+    soon:"Coming soon", soonNote:"Same data format. Prices not loaded yet.", loaded:(n,d,z)=>`${n} products · prices captured ${d} · zone ${z}`, pick:name=>`Plan with ${name} →`, change:"change",
+    props:[["Whole packages","You can't buy 300 g of a 1 kg bag, so we price the bag and show what's left over."],["Honest verdict","Within budget, over, or not realistic — decided by arithmetic, never by the model."],["Reuse first","Recipes share ingredients across the days so less ends up in the bin."]],
+    opened:"opened", tapCell:"tap a meal to see the recipe", close:"Close", recipeNote:"Recipe by AI · quantities and prices by code", legendRe:"reused from an earlier day", legendLo:"leftover kept for a later day" },
   es: { app:"Student Meal Planner", tag:"Mercadona · España", yourWeek:"Tu semana", presets:"Empezar rápido", budget:"Presupuesto de compra", people:"Personas", days:"Días", meals:"Comidas a planificar",
     breakfast:"Desayuno", lunch:"Comida", dinner:"Cena", diet:"Dieta", omnivore:"De todo", pescatarian:"Pescetariana", vegetarian:"Vegetariana", vegan:"Vegana",
     allergies:"Alergias", home:"Ya tengo en casa", avoid:"No quiero", addPh:"Añadir…", note:"Algo más", notePh:"Cocina pequeña, una sartén, sin horno.",
@@ -357,8 +400,19 @@ const T = {
     nrRaise:v=>`Sube el presupuesto a ${v}`, nrRaiseNote:"Mismos días, mismas comidas.", nrKeep:(b,d)=>`Mantén ${b}, planifica ${d} ${d>1?"días":"día"}`, nrKeepNote:"Mismas comidas, menos días.", nrOne:d=>`Cocina para 1, ${d} ${d>1?"días":"día"}`, nrOneNote:"Todo lo que pusiste, para una persona.", nrHome:"Dinos qué tienes en casa", nrHomeNote:"Arroz, aceite o pasta que ya tengas reducen mucho la cesta.",
     nrNo:"No se ha generado ningún plan. Preferimos decirlo a darte una lista que no puedes pagar.", edit:"✎ Editar",
     hood:"Cómo se ha hecho", hoodCalls:n=>`Se ha llamado al modelo ${n} ${n>1?"veces":"vez"}. Todo lo demás lo ha hecho el código.`, invalidStep:"rechazado por nuestras comprobaciones", priced:"calculado por el código en", saysNo:"el modelo ha dicho que el presupuesto no es realista", problems:"problemas",
-    footer:(p,v)=>`Precios: ${p.supermarket}, zona ${p.zone}, capturados el ${p.captured_at} (OpenCesta, ODbL). Los precios en tienda pueden variar. La información de alérgenos es orientativa: comprueba siempre la etiqueta. Las recetas las genera un modelo de IA (prompt ${v}) y no se han probado en cocina. Los totales los calcula el código.` }
+    footer:(p,v)=>`Precios: ${p.supermarket}, zona ${p.zone}, capturados el ${p.captured_at} (OpenCesta, ODbL). Los precios en tienda pueden variar. La información de alérgenos es orientativa: comprueba siempre la etiqueta. Las recetas las genera un modelo de IA (prompt ${v}) y no se han probado en cocina. Los totales los calcula el código.`,
+    kicker:"Student Meal Planner · España", welcomeTitle:"Come bien toda la semana con presupuesto de estudiante.", welcomeLead:"Elige tu supermercado. La IA escribe las recetas; el código valora cada envase entero y te dice con honestidad si tu presupuesto aguanta.",
+    soon:"Próximamente", soonNote:"Mismo formato de datos. Precios aún no cargados.", loaded:(n,d,z)=>`${n} productos · precios capturados el ${d} · zona ${z}`, pick:name=>`Planificar con ${name} →`, change:"cambiar",
+    props:[["Envases enteros","No puedes comprar 300 g de una bolsa de 1 kg: valoramos la bolsa y te enseñamos lo que sobra."],["Veredicto honesto","Dentro, por encima o no realista: lo decide la aritmética, nunca el modelo."],["Reutilizar primero","Las recetas comparten ingredientes entre días para que acabe menos en la basura."]],
+    opened:"abierto", tapCell:"toca una comida para ver la receta", close:"Cerrar", recipeNote:"Receta por IA · cantidades y precios por código", legendRe:"reutilizado de un día anterior", legendLo:"sobra que se guarda para otro día" }
 };
+const SHOPS = [
+  { id:"mercadona", name:"Mercadona", color:"#1E5A3A", available:true },
+  { id:"dia", name:"Dia", color:"#B33A3A", available:false },
+  { id:"carrefour", name:"Carrefour", color:"#1F4E8C", available:false },
+  { id:"lidl", name:"Lidl", color:"#C99A1B", available:false },
+];
+let shop = null, lastAnalysis = null;
 const AISLES = ["vegetables","fruit","meat_fish","dairy_eggs","legumes","grains","bread","pantry","spices"];
 const KEEPS = new Set(["pantry","spices","grains","legumes"]);
 const FLOOR = 0.85;
@@ -420,6 +474,7 @@ function paint() {
   document.documentElement.lang = lang;
   document.title = t("app");
   document.querySelectorAll("[data-t]").forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelector(".brand span").textContent = shop ? `${shop.name} · ${lang === "es" ? "España" : "Spain"}` : (lang === "es" ? "España" : "Spain");
   document.querySelectorAll("[data-lang]").forEach(b => b.classList.toggle("on", b.dataset.lang === lang));
   $("go").textContent = t("submit"); $("notes").placeholder = t("notePh");
   $("presets").innerHTML = [[30,1,5],[40,2,5],[60,2,7]].map(([b,p,d]) => `<button type="button" data-preset="${b},${p},${d}">€${b} · ${p} · ${d}d</button>`).join("");
@@ -433,8 +488,29 @@ function paint() {
     $("footer").textContent = T[lang].footer(options.prices, options.prompt_version);
   }
   renderTags("have"); renderTags("dislike"); refresh();
+  if (!shop) { renderWelcome(); return; }
+  paintShopPill();
   if (lastResult) render(lastResult); else if (loading) renderLoading(); else renderEmpty();
 }
+
+/* ---------- landing ---------- */
+function renderWelcome() {
+  const p = options && options.prices, n = options ? options.ingredients.length : 0;
+  $("welcome").innerHTML = `<div class="kicker">${esc(t("kicker"))}</div><h1>${esc(t("welcomeTitle"))}</h1><p class="lead">${esc(t("welcomeLead"))}</p>
+    <div class="shops">${SHOPS.map(s => `<button type="button" class="shop" data-shop="${s.id}" ${s.available ? "" : "disabled"}>${s.available ? "" : `<span class="soon">${esc(t("soon"))}</span>`}<span class="mark" style="background:${s.color}">${s.name[0]}</span><span class="nm">${s.name}</span><span class="st ${s.available ? "ok" : ""}">${s.available ? (p ? esc(T[lang].loaded(n, p.captured_at, p.zone)) : "…") : esc(t("soonNote"))}</span>${s.available ? `<span class="cta">${esc(T[lang].pick(s.name))}</span>` : ""}</button>`).join("")}</div>
+    <div class="props">${T[lang].props.map(([b, s]) => `<div class="prop"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("")}</div>`;
+}
+function showLanding() {
+  shop = null; $("welcome").hidden = false; $("app").hidden = true; $("footer").hidden = true; $("shopBtn").hidden = true;
+  renderWelcome(); window.scrollTo({ top: 0 });
+}
+function chooseShop(id) {
+  shop = SHOPS.find(s => s.id === id); if (!shop || !shop.available) return;
+  $("welcome").hidden = true; $("app").hidden = false; $("footer").hidden = false; $("shopBtn").hidden = false;
+  try { localStorage.setItem("prefs", JSON.stringify({ ...saved, lang, shop: id })); } catch {}
+  paint(); window.scrollTo({ top: 0 });
+}
+function paintShopPill() { if (shop) $("shopBtn").innerHTML = `<i style="background:${shop.color}">${shop.name[0]}</i>${shop.name}<small>· ${esc(t("change"))}</small>`; }
 
 /* ---------- empty state ---------- */
 function renderEmpty() {
@@ -518,27 +594,40 @@ function shelfHtml(r, a) {
     <div class="shelf">${keeps.length ? `<div class="keeps"><h3>${t("keeps")}</h3>${keeps.map(row).join("")}</div>` : ""}${fridge.length ? `<div class="fridge"><h3>${t("fridge")}</h3>${fridge.map(row).join("")}</div>` : ""}</div>
     <button type="button" class="btn" style="margin-top:14px" data-act="next:${left.map(l => l.ingredient_id).join(",")}">${t("planNext")}</button></div>`;
 }
+function shortName(name) { const n = name.replace(/\s*\(.*?\)/g, "").replace(/^(cooked|frozen|canned|sliced)\s+/i, "").toLowerCase(); return n.length > 18 ? n.slice(0, 18).replace(/\s+\S*$/, "") : n; }
+function ingredientMark(i, day, a) {
+  const days = [...(a.uses[i.ingredient_id] || [])].sort((x, y) => x - y), first = days[0], last = days[days.length - 1], l = a.lines[i.ingredient_id] || {};
+  if (first < day - 1) return { cls: "re", text: `↻ ${shortName(i.name)}` };
+  if (last === day - 1 && l.leftover > 0 && !l.already_have) return { cls: "lo", text: `${shortName(i.name)} →` };
+  return null;
+}
 function planHtml(r, a) {
-  const order = ["breakfast","lunch","dinner"], byDay = {};
-  r.meals.forEach(m => (byDay[m.day] ||= []).push(m));
-  let html = `<div class="card"><h2>${esc(T[lang].planTitle(a.D))}</h2><p class="sub">${esc(T[lang].planSub(lastBody.meals.map(t).join(" + "), lastBody.people, t(lastBody.diet).toLowerCase()))}</p>`;
-  Object.keys(byDay).sort((x, y) => x - y).forEach(day => {
-    html += `<div class="day"><div class="dayhead"><b>${t("day")} ${day}</b><span>${money(Math.round((a.dayCosts[day - 1] || 0) * 100))}</span></div>`;
-    byDay[day].sort((x, y) => order.indexOf(x.meal) - order.indexOf(y.meal)).forEach((m, idx) => {
-      const id = `m${day}_${m.meal}`;
-      const pills = m.ingredients.map(i => {
-        const days = [...(a.uses[i.ingredient_id] || [])].sort((x, y) => x - y), first = days[0], last = days[days.length - 1], l = a.lines[i.ingredient_id] || {};
-        let p = `<span class="pill">${esc(i.name)} ${amount(i.quantity, i.unit)}</span>`;
-        if (first < day - 1) p += `<span class="pill re">${t("reusedFrom")} ${esc(i.name.toLowerCase())} · ${t("day")} ${first + 1}</span>`;
-        if (last === day - 1 && l.leftover > 0 && !l.already_have) p += `<span class="pill lo">${t("leftoverTo")} ${amount(l.leftover, l.base_unit)}</span>`;
-        return p;
-      }).join("");
-      html += `<button type="button" class="meal" aria-expanded="${day == 1 && idx === 0}" aria-controls="${id}"><span class="lab">${t(m.meal)}</span><span><span class="name">${esc(m.recipe_name)}</span><span class="pills">${pills}</span></span></button>
-        <div class="body" id="${id}" ${day == 1 && idx === 0 ? "" : "hidden"}><div><h4>${t("ingredients")}</h4><ul>${m.ingredients.map(i => `<li>${esc(i.name)} · ${amount(i.quantity, i.unit)}</li>`).join("")}</ul></div><div><h4>${t("method")}</h4><ol>${m.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol></div></div>`;
-    });
-    html += `</div>`;
+  const order = ["breakfast","lunch","dinner"], mealsIn = order.filter(k => r.meals.some(m => m.meal === k));
+  const byKey = {}; r.meals.forEach(m => byKey[`${m.day}_${m.meal}`] = m);
+  const days = Array.from({ length: a.D }, (_, i) => i + 1);
+  let cells = `<div></div>` + days.map(d => `<div class="dh"><b>${t("day")} ${d}</b><span>${money(Math.round((a.dayCosts[d - 1] || 0) * 100))} ${t("opened")}</span></div>`).join("");
+  mealsIn.forEach(meal => {
+    cells += `<div class="rl">${t(meal)}</div>` + days.map(d => {
+      const m = byKey[`${d}_${meal}`]; if (!m) return `<div></div>`;
+      const marks = m.ingredients.map(i => ingredientMark(i, d, a)).filter(Boolean).slice(0, 3).map(x => `<span class="${x.cls}">${esc(x.text)}</span>`).join("");
+      return `<button type="button" class="cell" data-open="${d}_${meal}"><span class="nm">${esc(m.recipe_name)}</span><span class="meta">${marks}</span></button>`;
+    }).join("");
   });
-  return html + `</div>`;
+  return `<div class="card"><h2>${esc(T[lang].planTitle(a.D))}</h2><p class="sub">${esc(T[lang].planSub(lastBody.meals.map(t).join(" + "), lastBody.people, t(lastBody.diet).toLowerCase()))} · ${esc(t("tapCell"))}</p>
+    <div class="weekwrap"><div class="week" style="grid-template-columns:${a.D > 4 ? "64px" : "72px"} repeat(${a.D},minmax(${a.D > 4 ? 150 : 170}px,1fr))">${cells}</div></div>
+    <div class="wlegend"><span><i class="re">↻</i>${esc(t("legendRe"))}</span><span><i class="lo">→</i>${esc(t("legendLo"))}</span></div></div>`;
+}
+function openRecipe(key) {
+  if (!lastResult || !lastAnalysis) return;
+  const [d, meal] = key.split("_"), m = lastResult.meals.find(x => x.day == d && x.meal === meal); if (!m) return;
+  const a = lastAnalysis;
+  const rows = m.ingredients.map(i => { const mk = ingredientMark(i, +d, a), l = a.lines[i.ingredient_id] || {};
+    const note = l.already_have ? t("atHome") : mk ? (mk.cls === "re" ? `${t("reusedFrom")} ${t("day").toLowerCase()} ${Math.min(...a.uses[i.ingredient_id]) + 1}` : `${t("leftoverTo")} ${amount(l.leftover, l.base_unit)}`) : "";
+    return `<li>${esc(i.name)} · ${amount(i.quantity, i.unit)}${note ? `<small>${esc(note)}</small>` : ""}</li>`; }).join("");
+  $("recipe").innerHTML = `<div class="rcp"><div class="caps">${t("day")} ${d} · ${t(meal)} · ${m.servings} ${t("serves")}</div><h2>${esc(m.recipe_name)}</h2>
+    <div class="cols"><div><h4>${t("ingredients")}</h4><ul>${rows}</ul></div><div><h4>${t("method")}</h4><ol>${m.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div></div>
+    <div class="foot"><span class="mono" style="color:var(--muted)">${esc(t("recipeNote"))}</span><button type="button" class="btn" data-close>${esc(t("close"))}</button></div></div>`;
+  $("recipe").showModal();
 }
 function receiptHtml(r) {
   const buy = r.shopping_list.filter(l => !l.already_have), home = r.shopping_list.filter(l => l.already_have), b = r.budget;
@@ -585,12 +674,13 @@ function render(r) {
   if (r.status === "invalid_plan") html += `<div class="verdict nr" style="border-color:var(--red-line)"><div class="caps">⚠ ${t("invalid")}</div><p class="sub" style="margin:10px 0 0">${t("invalidText")}</p></div>`;
   else if (r.status === "infeasible") html += notRealisticHtml(r);
   else {
-    const a = analyse(r);
+    const a = analyse(r); lastAnalysis = a;
     html += verdictHtml(r, a);
     if (!r.budget.within_budget) html += changesHtml(r, a);
+    html += planHtml(r, a);
     html += `<div class="card"><h2>${t("mapTitle")}</h2><p class="sub">${t("mapSub")}</p><div class="map" id="reuseMap"></div>
       <div class="legend"><span><i class="knot"></i>${t("legendKnot")}</span><span><i class="bead"></i>${t("legendBead")}</span><span><i class="dash"></i>${t("legendDash")}</span></div></div>`;
-    html += shelfHtml(r, a) + planHtml(r, a) + receiptHtml(r);
+    html += shelfHtml(r, a) + receiptHtml(r);
     $("right").innerHTML = html + hoodHtml(r);
     ThreadedPantry.renderBraid($("reuseMap"), a.strands, { days: a.D, labels: true, dayCosts: a.dayCosts, dayWord: t("dayWord"), costWord: t("costByDay"), scale: innerWidth < 600 ? 0.8 : 1, formatMoney: v => money(Math.round(v * 100)) });
     const copy = $("copy");
@@ -616,15 +706,19 @@ function act(code) {
   $("form").requestSubmit();
 }
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-step],[data-preset],[data-lang],[data-remove],[data-plus],[data-act],.meal");
+  if (e.target === $("recipe")) { $("recipe").close(); return; }
+  const el = e.target.closest("[data-step],[data-preset],[data-lang],[data-remove],[data-plus],[data-act],[data-shop],[data-open],[data-close],#shopBtn");
   if (!el) return;
-  if (el.dataset.step) { const i = $(el.dataset.step); i.value = Math.min(+i.max, Math.max(+i.min, (+i.value || 0) + +el.dataset.by)); refresh(); }
+  if (el.dataset.shop) chooseShop(el.dataset.shop);
+  else if (el.id === "shopBtn") showLanding();
+  else if (el.dataset.open) openRecipe(el.dataset.open);
+  else if (el.hasAttribute("data-close")) $("recipe").close();
+  else if (el.dataset.step) { const i = $(el.dataset.step); i.value = Math.min(+i.max, Math.max(+i.min, (+i.value || 0) + +el.dataset.by)); refresh(); }
   else if (el.dataset.preset) { const [b, p, d] = el.dataset.preset.split(","); $("budget").value = b; $("people").value = p; $("days").value = d; refresh(); }
   else if (el.dataset.lang) { lang = el.dataset.lang; try { localStorage.setItem("prefs", JSON.stringify({ ...saved, lang })); } catch {} paint(); }
   else if (el.dataset.remove) { tags[el.dataset.remove].delete(el.dataset.id); renderTags(el.dataset.remove); refresh(); }
   else if (el.dataset.plus) { const input = $(el.dataset.plus).querySelector("input"); addTag(el.dataset.plus, input.value); input.value = ""; input.focus(); }
   else if (el.dataset.act) act(el.dataset.act);
-  else if (el.classList.contains("meal")) { const open = el.getAttribute("aria-expanded") === "true"; el.setAttribute("aria-expanded", !open); $(el.getAttribute("aria-controls")).hidden = open; }
 });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset && e.target.dataset.add) { e.preventDefault(); addTag(e.target.dataset.add, e.target.value); e.target.value = ""; } });
 document.addEventListener("change", e => { if (e.target.dataset && e.target.dataset.add) { addTag(e.target.dataset.add, e.target.value); e.target.value = ""; } else refresh(); });

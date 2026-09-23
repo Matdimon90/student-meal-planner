@@ -22,6 +22,7 @@ Each version is a file in [`prompts/`](../prompts). Scores come from `python3 sc
 | v1 | 2026-09-23 | 0/10 | 0/10 | 0/10 | 0/10 | 0/10 | 0/10 | 0/60 | 20 |
 | v2 | 2026-09-23 | 10/10 | 6/10 | 10/10 | 6/10 | 2/10 | 6/10 | 40/60 | 22 |
 | v3 | 2026-09-23 | 10/10 | 9/10 | 10/10 | 9/10 | 6/10 | 8/10 | 52/60 | 14 |
+| v4 | 2026-09-23 | 10/10 | 10/10 | 10/10 | 9/10 | 9/10 | 10/10 | 58/60 | 11 |
 
 ### Quality of the plans (not part of the score)
 
@@ -31,6 +32,7 @@ The script also prints three numbers for the plans that could be priced. They sh
 | --- | --- | --- | --- |
 | v2 | 1.79 | 2.78 | 46% |
 | v3 | 1.88 | 1.89 | 56% |
+| v4 | 2.22 | 1.51 | 51% |
 
 Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 6 s per model call.
 
@@ -97,11 +99,19 @@ Remaining failures:
 
 ## v4 — few-shot
 
-**Problem.** _Fill in from v3 results._
+**Problem.** v3 gave up when a plan was 2 EUR over budget instead of swapping an ingredient, still wrote fruit in pieces instead of grams, and did not reuse packages (56% of the money in leftovers).
 
 **Prompt.** v3 plus two worked examples: one cheap plan that reuses ingredients, one honest refusal.
 
-**What happened.** _Fill in. Did the reuse ratio go up? Did the model copy the example recipes too often?_
+**What happened.** 58/60, 11 model calls for 10 cases (9 cases solved on the first reply), 1.51 EUR per serving. The two cases v3 gave up on (`tight_budget`, `pantry`) are now solved first time at 14.20 and 9.00 EUR: the example of a cheap plan did what the rule "propose a cheaper plan" could not. `sycophancy` is now refused on the first reply, with the arithmetic we asked for: *"14 meals for 3 people with a 5 euro budget equals 0.36 euros per serving. Even the cheapest proteins and carbohydrates in whole packages exceed this budget significantly."* This is the reply we want: a number, not an opinion.
+
+Reuse ratio went up from 1.88 to 2.22 recipes per ingredient and leftovers went down from 56% to 51%. Better, but not solved: the model reuses the pantry items (rice, pasta, eggs, tomato) and still opens fresh vegetables for one meal.
+
+Did the model copy the examples? Partly. "Egg fried rice" appears in 2 of the 8 plans and "Rice with chickpeas and tomato" (the second example, renamed) in 2 more. The other 30 or so recipes are new. A student would notice that every plan looks like the examples: cheap, rice-heavy, few vegetables. The examples fix behaviour but also narrow the menu.
+
+The one remaining failure is the same as in v2 and v3: `big_week` writes `banana`, `tomato`, `cucumber` in `ud` instead of `g` (4 unit errors, then a correct repair). Three prompt versions have not fixed it, so it is not a prompt problem: those products are sold by weight in the catalogue but everyone counts them by piece. The fix belongs in the code (accept `ud` for fruit and vegetables and convert with an average weight), or in the catalogue (a `recipe_unit` per product, which is already in the data model but not used by the validator).
+
+**What we changed next and why.** v4 is the version the app ships with. The next step is v5, written by us from these results, and one experiment that we expect to fail (see below).
 
 ## Model comparison (speed vs quality)
 

@@ -23,6 +23,7 @@ Each version is a file in [`prompts/`](../prompts). Scores come from `python3 sc
 | v2 | 2026-09-23 | 10/10 | 6/10 | 10/10 | 6/10 | 2/10 | 6/10 | 40/60 | 22 |
 | v3 | 2026-09-23 | 10/10 | 9/10 | 10/10 | 9/10 | 6/10 | 8/10 | 52/60 | 14 |
 | v4 | 2026-09-23 | 10/10 | 10/10 | 10/10 | 9/10 | 9/10 | 10/10 | 58/60 | 11 |
+| v5 | 2026-09-23 | 10/10 | 9/10 | 10/10 | 8/10 | 6/10 | 9/10 | 52/60 | 14 |
 
 ### Quality of the plans (not part of the score)
 
@@ -33,6 +34,7 @@ The script also prints three numbers for the plans that could be priced. They sh
 | v2 | 1.79 | 2.78 | 46% |
 | v3 | 1.88 | 1.89 | 56% |
 | v4 | 2.22 | 1.51 | 51% |
+| v5 | 1.74 | 1.74 | 50% |
 
 Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 6 s per model call.
 
@@ -112,6 +114,23 @@ Did the model copy the examples? Partly. "Egg fried rice" appears in 2 of the 8 
 The one remaining failure is the same as in v2 and v3: `big_week` writes `banana`, `tomato`, `cucumber` in `ud` instead of `g` (4 unit errors, then a correct repair). Three prompt versions have not fixed it, so it is not a prompt problem: those products are sold by weight in the catalogue but everyone counts them by piece. The fix belongs in the code (accept `ud` for fruit and vegetables and convert with an average weight), or in the catalogue (a `recipe_unit` per product, which is already in the data model but not used by the validator).
 
 **What we changed next and why.** v4 is the version the app ships with. The next step is v5, written by us from these results, and one experiment that we expect to fail (see below).
+
+## v5 — varied menu (written by us from the v4 results)
+
+**Problem.** v4 copies its own examples (rice-heavy menus, few vegetables), still writes fruit in pieces, and 51% of the money goes to leftovers.
+
+**Prompt.** v4 plus: gram equivalents for produce (1 banana = 120 g...), one vegetable in every lunch and dinner, an explicit reuse target (every package in at least 2 recipes), and rule 10: "the examples show the format, not the menu; do not copy them, no recipe twice, no same base two days in a row".
+
+**What we expected.** 60/60 and a better reuse ratio.
+
+**What happened.** 52/60. Worse than v4 (58), with more model calls (14 instead of 11), a lower reuse ratio (1.74 instead of 2.22) and more expensive plans (1.74 EUR per serving instead of 1.51). One thing worked: `big_week` is 6/6 for the first time, the gram equivalents fixed the fruit units. Everything else got worse:
+
+- Asking for variety costs money. "No same base two days in a row" and "a vegetable in every meal" force the model to open more packages, which is exactly what rule 4 tells it not to do. Two of our rules pull in opposite directions and the model obeys the newest one.
+- `tight_budget` and `sycophancy` came back to the v3 behaviour: a first plan a few euros over (21.35 EUR for 15), then "infeasible" on the retry, because a cheaper plan would break the variety rules.
+- New mistakes appeared where there were none: `carrot` invented in the vegan case, `lettuce` in grams in `basic`. A longer rule list seems to dilute the rules that mattered.
+- The menus still repeat: "Lentil soup with vegetables" and "Macaroni with lentils and tomato" each appear in two different plans. Rule 10 changed the recipe names more than the recipes.
+
+**What we learned.** More rules is not more control. Each rule we add competes with the others for the model's attention, and the score tells us which one loses. The right fix for the two things v5 tried to solve is not in the prompt: fruit units belong in the validator (accept pieces for produce and convert), and variety should be a user choice ("cheapest" vs "varied") rather than a rule the model has to balance against the budget. v4 stays the version the app ships with.
 
 ## Model comparison (speed vs quality)
 

@@ -6,7 +6,7 @@ Short notes on the choices that shaped the project, in order.
 
 Our first idea ("4yourfridge") was an app that recognises food in a photo of your fridge and suggests dishes. We dropped it and kept the theme (students and food), moving to a problem we have every week: what to cook, what to buy, and whether the budget allows it.
 
-_Team: write here, in your own words, why you dropped the fridge idea._
+_Team: We dropped it because the photo recognition would have been the whole project: an ingredient classifier is hard to make reliable in one week, and a wrong detection ("chicken" instead of "tofu") makes every suggestion wrong. Budget was also missing from the idea, and budget is what actually decides what a student cooks. The meal planner keeps the useful part (help us decide what to cook) and adds the part we care about (does it fit in the money we have).
 
 ## 2. No live supermarket prices
 

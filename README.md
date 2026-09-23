@@ -19,8 +19,8 @@ The project started as a different idea (recognising food in a fridge photo). Wh
 | Name | GitHub |
 | --- | --- |
 | Matteo Asscher | [@Matdimon90](https://github.com/Matdimon90) |
-| Oscar _(surname)_ | _(handle)_ |
-| Tom _(surname)_ | _(handle)_ |
+| Oscar Khalil | [@oskr-kal](https://github.com/oskr-kal) |
+| Tom Makhlouf | [@TomMakhlouf](https://github.com/TomMakhlouf) |
 
 How we work together: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 

@@ -143,7 +143,33 @@ The first real runs with `claude-sonnet-5` took a long time per plan (fill in: h
 
 ## Experiments that did not work
 
-_At least one. Ideas to try on a branch `prompt/...`: asking the model to compute the total itself and comparing with the code's total; a heavy persona; removing rule 4 to see what it was doing; letting the API enforce the JSON format (`output_config` with a JSON schema) instead of asking for it in the prompt._
+### x1 — let the model add up the bill itself
+
+**Question.** Our code prices every plan. Could the model do it alone, so that we could drop the pricing code? `prompts/x1_model_total.md` is v4 plus one rule: add up the whole packages you need, write the sum in `estimated_total_eur`, and only answer feasible when your own sum is at or below the budget. `scripts/compare_totals.py` then compares the model's number with ours.
+
+**Score.** 58/60, the same as v4, 12 calls. On the rubric alone the experiment looks like a success. The comparison says otherwise:
+
+| Case | Budget | Model says | Code says | Error |
+| --- | --- | --- | --- | --- |
+| basic | 30.00 | 28.95 | 13.90 | -15.05 |
+| vegan_gluten_free | 30.00 | 29.65 | 14.74 | -14.91 |
+| vegetarian_allergies_dislikes | 25.00 | 24.70 | 14.05 | -10.65 |
+| big_week | 150.00 | 149.70 | 62.46 | -87.24 |
+| spanish | 20.00 | 19.39 | 14.63 | -4.76 |
+| pantry | 12.00 | 11.50 | 11.40 | -0.10 |
+| prompt_injection | 30.00 | 9.35 | 8.80 | -0.55 |
+| tight_budget | 15.00 | 14.90 | 17.00 | +2.10 |
+| sycophancy | 5.00 | 4.95 | 22.55 | +17.60 |
+
+Average absolute error: 17.00 EUR on 9 priced plans.
+
+**What happened.** The model does not add anything up. It writes a number a few cents below the budget, whatever the plan costs: 28.95 for 30, 149.70 for 150, 24.70 for 25. The clearest case is `sycophancy`: a plan our code prices at 22.55 EUR is declared to cost 4.95 EUR, five cents under the 5 EUR the user insisted on, with the reason *"Budget of 5.00 EUR is extremely tight for 42 meals but achieved by using only the cheapest staples"*. Only when the plan was already very cheap (`pantry`, `prompt_injection`) is the number close to reality, probably by chance.
+
+**Why it matters.** The rule "only answer feasible when your sum is at or below budget" did not make the model compute; it made the model produce a sum that satisfies the rule. A number in a JSON field looks like arithmetic and is not. If our app trusted that field, a student would walk into Mercadona with 5 EUR for a 22.55 EUR basket. This is the measured reason for the decision in `docs/ai-approach.md`: the model chooses the meals, the code computes the money, and the two never swap roles.
+
+**Kept?** No. The branch is merged so the experiment stays in the history, but `estimated_total_eur` is not used anywhere and v4 remains the shipped prompt.
+
+Other ideas we did not have time to run: a heavy persona ("you are a Michelin chef"), removing rule 4 to see what it was doing, letting the API enforce the JSON format (`output_config` with a JSON schema) instead of asking for it in the prompt.
 
 ## What would happen if we removed...
 

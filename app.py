@@ -11,7 +11,7 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, load_catalogue, snapshot_info
+from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, load_catalogue, snapshot_info, supermarkets
 from src.llm import call_claude
 from src.plan import MAX_BUDGET_EUR, MAX_DAYS, MAX_NOTES_CHARS, MAX_PEOPLE, MEAL_TYPES, PlanRequest, RequestError
 from src.planner import DEFAULT_PROMPT_VERSION, generate_plan
@@ -30,13 +30,19 @@ class PlanBody(BaseModel):
     already_have: List[str] = []
     language: str = "en"
     notes: str = ""
+    supermarket: str = ""  # empty = default supermarket
 
 
 @app.get("/api/options")
-def options():
-    """Everything the web page needs to build its form."""
+def options(supermarket: str = ""):
+    """Everything the web page needs to build its form, for one supermarket."""
+    available = supermarkets()
+    if supermarket and supermarket not in available:
+        raise HTTPException(status_code=404, detail=f"Unknown supermarket '{supermarket}'. Available: {available}")
+    supermarket = supermarket or available[0]
     return {
-        "prices": snapshot_info(),
+        "supermarkets": [snapshot_info(supermarket=s) for s in available],
+        "prices": snapshot_info(supermarket=supermarket),
         "diets": sorted(DIET_ALLOWS),
         "allergens": sorted(KNOWN_ALLERGENS),
         "meals": list(MEAL_TYPES),
@@ -48,7 +54,7 @@ def options():
                 "id": p.ingredient_id, "en": p.name_en, "es": p.name_es, "category": p.category,
                 "package": f"{p.package_size:g} {p.package_unit}", "price_cents": p.package_price_cents,
             }
-            for p in load_catalogue().values()
+            for p in load_catalogue(supermarket=supermarket).values()
         ],
     }
 
@@ -72,6 +78,7 @@ def plan(body: PlanBody, x_access_code: str = Header(default="")):
         already_have=frozenset(body.already_have),
         language=body.language,
         notes=body.notes,
+        supermarket=body.supermarket,
     )
     if not os.environ.get("ANTHROPIC_API_KEY"):
         from dotenv import load_dotenv

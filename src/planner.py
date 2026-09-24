@@ -15,7 +15,7 @@ the total and never decides whether the budget is respected.
 import time
 from dataclasses import asdict
 
-from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info
+from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supermarkets
 from src.plan import PlanFormatError, PlanRequest, parse_plan, validate_plan, validate_request
 from src.prompting import render_prompt
 from src.shopping import build_shopping_list, check_budget, format_euros
@@ -64,7 +64,7 @@ def generate_plan(request: PlanRequest, call_model, prompt_version: str = DEFAUL
     """Run the pipeline. `call_model(system, messages) -> str` is passed in so
     tests can use a fake model and never need an API key."""
     validate_request(request)
-    catalogue = catalogue or load_catalogue()
+    catalogue = catalogue or load_catalogue(supermarket=request.supermarket or None)
     allowed = allowed_catalogue(catalogue, request.diet, request.allergies, request.disliked)
 
     system, user_message = render_prompt(prompt_version, request, allowed)
@@ -126,8 +126,36 @@ def _summary(request: PlanRequest, plan, shopping_list: list, check) -> dict:
     }
 
 
+def compare_supermarkets(plan, request: PlanRequest, current: str) -> list:
+    """Price the same meals in every other supermarket we have a snapshot for.
+
+    Pure code, no model call: the recipes do not change, only the packages and
+    their prices. An ingredient a shop does not sell is listed in `missing`
+    and the total for that shop is then only indicative.
+    """
+    rows = []
+    for supermarket in supermarkets():
+        if supermarket == current:
+            continue
+        catalogue = load_catalogue(supermarket=supermarket)
+        needed = {need.ingredient_id for need in plan.needs}
+        missing = sorted(needed - set(catalogue))
+        needs = [need for need in plan.needs if need.ingredient_id in catalogue]
+        lines = build_shopping_list(needs, catalogue, request.already_have)
+        check = check_budget(lines, round(request.budget_eur * 100))
+        rows.append({
+            **snapshot_info(supermarket=supermarket),
+            "total_cents": check.total_cents,
+            "within_budget": check.within_budget,
+            "missing": missing,
+            "packages": sum(line.packages for line in lines),
+        })
+    return rows
+
+
 def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=None, check=None) -> dict:
     language = request.language
+    supermarket = _supermarket_of(catalogue)
 
     def name(ingredient_id):
         product = catalogue[ingredient_id]
@@ -136,7 +164,8 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
     result = {
         "status": status,  # ok | over_budget | infeasible | invalid_plan
         "prompt_version": prompt_version,
-        "prices": snapshot_info(),
+        "prices": snapshot_info(supermarket=supermarket),
+        "comparison": [],
         "trace": trace,
         "reason": plan.reason if plan else "",
         "model_suggestions": list(plan.suggestions) if plan else [],
@@ -167,6 +196,7 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
                 "package_unit": catalogue[line.ingredient_id].package_unit,
                 "package_price_cents": catalogue[line.ingredient_id].package_price_cents,
                 "category": catalogue[line.ingredient_id].category,
+                "product_name": catalogue[line.ingredient_id].product_name,
                 # What the unused part of the packages is worth: money spent on food not in the plan.
                 "leftover_cents": round(line.cost_cents * line.leftover / line.bought) if line.bought else 0,
             }
@@ -176,4 +206,11 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
         result["summary"] = _summary(request, plan, result["shopping_list"], check)
         if not check.within_budget:
             result["code_suggestions"] = _code_suggestions(request, check, lines)
+        if supermarket:  # a hand-made catalogue (tests) belongs to no shop: nothing to compare
+            result["comparison"] = compare_supermarkets(plan, request, supermarket)
     return result
+
+
+def _supermarket_of(catalogue: dict) -> str:
+    """The supermarket a catalogue was loaded from ("" for a hand-made one)."""
+    return next(iter(catalogue.values())).supermarket if catalogue else ""

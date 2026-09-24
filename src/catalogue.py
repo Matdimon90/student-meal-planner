@@ -27,17 +27,42 @@ KNOWN_ALLERGENS = {
 }
 
 
-def latest_snapshot_path(data_dir: Path = DATA_DIR) -> Path:
-    """Return the newest prices_*.csv file (the date is in the file name)."""
-    snapshots = sorted(data_dir.glob("prices_*.csv"))
-    if not snapshots:
+# Snapshot files are named prices_<supermarket>_<zone>_<date>.csv. The first
+# supermarket in this list is the default one.
+SUPERMARKET_NAMES = {"mercadona": "Mercadona", "dia": "Dia", "ahorramas": "Ahorramás"}
+DEFAULT_SUPERMARKET = "mercadona"
+
+
+def snapshot_paths(data_dir: Path = DATA_DIR) -> dict:
+    """{supermarket_id: newest prices_*.csv for it} (the date is in the file name)."""
+    paths = {}
+    for path in sorted(data_dir.glob("prices_*.csv")):
+        supermarket = path.name.split("_")[1]
+        paths[supermarket] = path  # sorted by name, so the newest date wins
+    if not paths:
         raise FileNotFoundError(f"No prices_*.csv file found in {data_dir}")
-    return snapshots[-1]
+    return paths
 
 
-def load_catalogue(path: Path = None) -> dict:
-    """Read the price snapshot into {ingredient_id: Product}."""
-    path = path or latest_snapshot_path()
+def supermarkets(data_dir: Path = DATA_DIR) -> list:
+    """The supermarkets we have prices for, default first."""
+    ids = list(snapshot_paths(data_dir))
+    ids.sort(key=lambda s: (s != DEFAULT_SUPERMARKET, s))
+    return ids
+
+
+def latest_snapshot_path(data_dir: Path = DATA_DIR, supermarket: str = None) -> Path:
+    """Path of the snapshot for one supermarket (the default one when not given)."""
+    paths = snapshot_paths(data_dir)
+    supermarket = supermarket or supermarkets(data_dir)[0]
+    if supermarket not in paths:
+        raise KeyError(f"No price snapshot for supermarket '{supermarket}'. Available: {sorted(paths)}")
+    return paths[supermarket]
+
+
+def load_catalogue(path: Path = None, supermarket: str = None) -> dict:
+    """Read one supermarket's price snapshot into {ingredient_id: Product}."""
+    path = path or latest_snapshot_path(supermarket=supermarket)
     catalogue = {}
     with open(path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
@@ -52,19 +77,25 @@ def load_catalogue(path: Path = None) -> dict:
                 category=row["category"],
                 diet=row["diet"],
                 allergens=allergens,
+                piece_grams=float(row.get("piece_grams") or 0),
+                product_name=row.get("product_name", ""),
+                supermarket=row.get("supermarket", ""),
             )
     return catalogue
 
 
-def snapshot_info(path: Path = None) -> dict:
+def snapshot_info(path: Path = None, supermarket: str = None) -> dict:
     """Supermarket, zone and capture date, shown to the user next to every price."""
-    path = path or latest_snapshot_path()
+    path = path or latest_snapshot_path(supermarket=supermarket)
     with open(path, newline="", encoding="utf-8") as f:
-        first = next(csv.DictReader(f))
+        rows = list(csv.DictReader(f))
+    first = rows[0]
     return {
         "supermarket": first["supermarket"],
+        "name": SUPERMARKET_NAMES.get(first["supermarket"], first["supermarket"].title()),
         "zone": first["zone"],
         "captured_at": first["captured_at"],
+        "products": len(rows),
     }
 
 

@@ -123,3 +123,10 @@ Tapping a cell opens a native `<dialog>` (card background, 16px radius, backdrop
 
 ### Header on phones
 The wordmark takes the full width; the shop pill, language switch and theme button wrap to a second row. The "· change" hint in the pill is hidden under 600px.
+
+### Update: real supermarkets (2026-09-23, later the same day)
+The landing grid is now built from `/api/options` (`supermarkets`): every card is enabled, shows the shop's initial in its colour, "85 products · prices of 2026-09-21 · all of Spain", and, when a shop misses some of our 86 staples, a second mono line "1 of our 86 staples not sold here". No "coming soon" cards: what is on the page exists.
+
+**Same basket, other shops** card, placed right after the week board: one row per other supermarket (mark, name, note "every ingredient available · Madrid" or amber "1 ingredient not sold there, total without it: tofu", a "Plan with Dia instead" button), and on the right the Fraunces total with a mono delta in green ("€2.33 cheaper") or red ("€2.33 more"). The button switches the shop pill and re-plans.
+
+The till receipt is headed with the chosen shop's name and every item shows the real product name in a small muted line under our name ("Round rice" / "Arroz redondo J.Sendra Dia Arrozona 1 Kg").

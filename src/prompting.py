@@ -27,7 +27,10 @@ def catalogue_lines(allowed: dict, language: str, with_prices: bool) -> str:
     lines = []
     for product in allowed.values():
         name = product.name_es if language == "es" else product.name_en
-        line = f"{product.ingredient_id} | {name} | {product.recipe_unit}"
+        unit = product.recipe_unit
+        if product.piece_grams:
+            unit = f"g (1 piece = {product.piece_grams:g} g)"
+        line = f"{product.ingredient_id} | {name} | {unit}"
         if with_prices:
             line += f" | {product.package_size:g} {product.package_unit} | {product.package_price_cents / 100:.2f}"
         lines.append(line)

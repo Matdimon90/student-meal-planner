@@ -83,3 +83,12 @@ def test_model_failure_gives_502_without_leaking_details(monkeypatch):
     response = client.post("/api/plan", json=BODY)
     assert response.status_code == 502
     assert "sk-ant" not in response.text
+
+
+def test_options_lists_supermarkets_and_switches_prices():
+    data = client.get("/api/options").json()
+    assert [s["supermarket"] for s in data["supermarkets"]][:2] == ["mercadona", "dia"]
+    dia = client.get("/api/options?supermarket=dia").json()
+    assert dia["prices"]["supermarket"] == "dia"
+    assert len(dia["ingredients"]) == 85
+    assert client.get("/api/options?supermarket=lidl").status_code == 404

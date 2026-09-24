@@ -138,3 +138,20 @@ def test_wrong_number_of_servings_is_reported():
 def test_unrealistic_quantity_is_reported():
     meal = make_meal(ingredients=[{"ingredient_id": "rice_round", "quantity": 50000, "unit": "g"}])
     assert any(p.startswith("BAD_QUANTITY") for p in problems_for(make_reply([meal])))
+
+
+def test_produce_may_be_counted_in_pieces_but_pasta_may_not():
+    from src.catalogue import load_catalogue, allowed_catalogue
+    catalogue = load_catalogue()
+    allowed = allowed_catalogue(catalogue)
+    req = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",))
+    plan = parse_plan(json.dumps({"feasible": True, "reason": "", "meals": [{"day": 1, "meal": "dinner", "recipe_name": "Fruit and pasta", "servings": 2,
+        "ingredients": [{"ingredient_id": "banana", "quantity": 2, "unit": "ud"}, {"ingredient_id": "spaghetti", "quantity": 2, "unit": "ud"}], "steps": ["Mix."]}], "suggestions": []}))
+    problems = validate_plan(plan, req, catalogue, allowed)
+    assert len(problems) == 1 and problems[0].startswith("WRONG_UNIT: 'spaghetti'")
+
+
+def test_supermarket_must_exist():
+    with pytest.raises(RequestError, match="Supermarket"):
+        validate_request(PlanRequest(budget_eur=20, people=2, days=1, supermarket="lidl"))
+    validate_request(PlanRequest(budget_eur=20, people=2, days=1, supermarket="dia"))

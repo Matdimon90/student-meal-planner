@@ -115,6 +115,8 @@ The one remaining failure is the same as in v2 and v3: `big_week` writes `banana
 
 **What we changed next and why.** v4 is the version the app ships with. The next step is v5, written by us from these results, and one experiment that we expect to fail (see below).
 
+**Follow-up (code, not prompt).** After v5 we added an average piece weight to the catalogue for fruit and vegetables and let the validator accept "2 ud" as well as "360 g" for them. The catalogue line in the prompt now reads `banana | Banana | g (1 piece = 180 g)`. Re-running v4 after this change is on the to-do list: we expect `big_week` to pass on the first call and v4 to reach 60/60 without any prompt change, which is the point.
+
 ## v5 — varied menu (written by us from the v4 results)
 
 **Problem.** v4 copies its own examples (rice-heavy menus, few vegetables), still writes fruit in pieces, and 51% of the money goes to leftovers.

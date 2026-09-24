@@ -15,6 +15,7 @@ A language model is good at inventing sensible recipes from a list of ingredient
 | Checking the model's answer (invented ingredients, units, missing meals) | Code (`src/plan.py`) | The model's output is never trusted as it comes. |
 | Adding quantities, rounding up to whole packages, total cost | Code (`src/shopping.py`) | Arithmetic must be exact. Done in integer cents. |
 | Deciding whether the budget is respected | Code (`src/shopping.py`) | The model must not grade its own work. |
+| Pricing the same plan in another supermarket | Code (`src/planner.py`) | Same ingredient ids, other packages: arithmetic again, no new model call. |
 | Explaining why a budget is unrealistic, proposing changes | **Model** and code | The model explains in words. The code adds numbers it computed itself. |
 
 ## The pipeline

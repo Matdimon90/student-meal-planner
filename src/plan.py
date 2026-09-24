@@ -8,7 +8,7 @@ it: invented ingredients, forbidden ingredients, wrong units, missing meals.
 import json
 from dataclasses import dataclass, field
 
-from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS
+from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, supermarkets
 from src.shopping import IngredientNeed
 
 MEAL_TYPES = ("breakfast", "lunch", "dinner")
@@ -41,6 +41,7 @@ class PlanRequest:
     already_have: frozenset = frozenset()  # ingredient_ids
     language: str = "en"
     notes: str = ""  # free text from the user: treated as data, never as instructions
+    supermarket: str = ""  # "" means the default supermarket (see src/catalogue.py)
 
     @property
     def slots(self) -> list:
@@ -88,6 +89,8 @@ def validate_request(request: PlanRequest) -> None:
         raise RequestError(f"Language must be one of {list(LANGUAGES)}")
     if len(request.notes) > MAX_NOTES_CHARS:
         raise RequestError(f"Notes must be at most {MAX_NOTES_CHARS} characters")
+    if request.supermarket and request.supermarket not in supermarkets():
+        raise RequestError(f"Supermarket must be one of {supermarkets()}")
 
 
 def extract_json(text: str) -> dict:
@@ -168,11 +171,11 @@ def validate_plan(plan: MealPlan, request: PlanRequest, full_catalogue: dict, al
                 problems.append(f"FORBIDDEN_INGREDIENT: '{need.ingredient_id}' in {where} breaks the user's diet, allergies or dislikes")
                 continue
             product = allowed[need.ingredient_id]
-            if need.unit != product.recipe_unit:
+            if not product.accepts_unit(need.unit):
                 problems.append(f"WRONG_UNIT: '{need.ingredient_id}' in {where} must be in {product.recipe_unit}, got {need.unit}")
                 continue
             if need.quantity <= 0:
                 problems.append(f"BAD_QUANTITY: '{need.ingredient_id}' in {where} has quantity {need.quantity}")
-            elif need.quantity > MAX_PER_SERVING[need.unit] * request.people:
+            elif product.to_recipe_base(need.quantity, need.unit) > MAX_PER_SERVING[product.recipe_unit] * request.people:
                 problems.append(f"BAD_QUANTITY: '{need.ingredient_id}' in {where} has an unrealistic quantity {need.quantity} {need.unit}")
     return problems

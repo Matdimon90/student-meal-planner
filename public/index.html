@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="AI meal planner and grocery budgeting for students in Spain, priced in whole Mercadona packages by code.">
+<meta name="description" content="AI meal planner and grocery budgeting for students in Spain, priced in whole supermarket packages by code.">
 <title>Student Meal Planner</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231E5A3A'/%3E%3Cpath d='M7 22c5-9 13-9 18 0' fill='none' stroke='%23F4EDDF' stroke-width='3' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='15.5' r='3' fill='%23F4EDDF'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -217,6 +217,21 @@
   @media (min-width:960px) { .nr h2 { font-size:44px; } }
   .why { margin:0; padding-left:22px; } .why li { margin:6px 0; }
 
+  /* other shops */
+  .cmp { display:grid; gap:10px; margin-top:12px; }
+  .cmp .row { display:grid; grid-template-columns:44px 1fr auto; gap:12px; align-items:center; border:1px solid var(--line); border-radius:12px; padding:12px 14px; background:var(--field); }
+  .cmp .mark { width:44px; height:44px; border-radius:12px; display:grid; place-items:center; color:#fff; font-family:var(--serif); font-weight:600; font-size:20px; }
+  .cmp .nm { font-family:var(--serif); font-size:19px; font-weight:600; display:block; }
+  .cmp .note { color:var(--muted); font-size:13px; display:block; }
+  .cmp .note.warn { color:var(--amber); }
+  .cmp .tot { text-align:right; }
+  .cmp .tot b { font-family:var(--serif); font-size:24px; display:block; line-height:1.1; }
+  .cmp .tot .d { font-family:var(--mono); font-size:13px; display:block; }
+  .cmp .tot .d.g { color:var(--green-ink); } .cmp .tot .d.r { color:var(--red); }
+  .cmp .row button { margin-top:6px; }
+  @media (max-width:600px) { .cmp .row { grid-template-columns:36px 1fr auto; } .cmp .mark { width:36px; height:36px; font-size:16px; } .cmp .tot b { font-size:20px; } }
+  .rgrid .it small { display:block; color:var(--muted); font-size:10.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:0; }
+
   /* week board */
   .weekwrap { overflow-x:auto; margin:10px -22px 0; padding:0 22px; -webkit-overflow-scrolling:touch; }
   .week { display:grid; gap:6px; }
@@ -335,18 +350,18 @@
 <script src="braid.js"></script>
 <script>
 const T = {
-  en: { app:"Student Meal Planner", tag:"Mercadona · Spain", yourWeek:"Your week", presets:"Quick start", budget:"Grocery budget", people:"People", days:"Days", meals:"Meals to plan",
+  en: { app:"Student Meal Planner", tag:"Spain", yourWeek:"Your week", presets:"Quick start", budget:"Grocery budget", people:"People", days:"Days", meals:"Meals to plan",
     breakfast:"Breakfast", lunch:"Lunch", dinner:"Dinner", diet:"Diet", omnivore:"Everything", pescatarian:"Pescatarian", vegetarian:"Vegetarian", vegan:"Vegan",
     allergies:"Allergies", home:"Already at home", avoid:"Don't want", addPh:"Add…", note:"Anything else", notePh:"Tiny kitchen, one pan, no oven.",
     hint:(pm,n)=>`≈ ${pm} per person per meal · ${n} meals`, hintLow:(pm,n)=>`≈ ${pm} per person per meal · ${n} meals · below our €0.85 floor`,
-    submit:"Plan my meals →", fine:"Prices come from Mercadona packages. Every total is added up by code — the AI never touches a price.",
+    submit:"Plan my meals →", fine:"Prices come from real supermarket packages. Every total is added up by code — the AI never touches a price.",
     gluten:"Gluten", egg:"Egg", milk:"Milk", fish:"Fish", soy:"Soy", peanuts:"Peanuts", sesame:"Sesame", celery:"Celery", mustard:"Mustard", sulphites:"Sulphites",
     how:"How it works", howSub:"Five steps. One is AI, three are plain code.", you:"You", ai:"AI", code:"Code",
-    steps:[["you","You set the budget, people, days and what you already have.",""],["ai","The model drafts meals that reuse ingredients across days.","It writes the recipes. It never sees or invents a price."],["code","Each ingredient is matched to a real Mercadona package.","Whole packages only: you can't buy 300 g of a 1 kg bag."],["code","Package prices are summed; leftovers are computed.","Needed − bought = what's left in your fridge."],["code","The total is checked against your budget.","Within, over, or not realistic — decided by arithmetic, not by the model."]],
+    steps:[["you","You set the budget, people, days and what you already have.",""],["ai","The model drafts meals that reuse ingredients across days.","It writes the recipes. It never sees or invents a price."],["code","Each ingredient is matched to a real package in your supermarket.","Whole packages only: you can't buy 300 g of a 1 kg bag."],["code","Package prices are summed; leftovers are computed.","Needed − bought = what's left in your fridge."],["code","The total is checked against your budget.","Within, over, or not realistic — decided by arithmetic, not by the model."]],
     heroTitle:"One week, fourteen ingredients, nothing thrown away.", heroSub:"Every strand is an ingredient. It opens on the day you first cook it, runs through every day it's reused, and either ends clean or trails off as a leftover. This is what your plan will look like.",
     promise:"Whole packages, honest totals", promiseBody:"Most planners price 200 g of rice. You buy a 1 kg bag. We price the bag, and show you what's left over so the next plan can use it.",
     loadingTitle:(n,p)=>`Planning ${n} meals for ${p} ${p>1?"people":"person"}…`, loadingSub:"Usually 15–30 seconds. Recipes are being written, then priced.",
-    loadSteps:(n,b)=>["Read your constraints",`Drafting ${n} meals that share ingredients`,"Matching ingredients to Mercadona packages","Adding up whole packages",`Checking the total against ${b}`],
+    loadSteps:(n,b,s)=>["Read your constraints",`Drafting ${n} meals that share ingredients`,`Matching ingredients to ${s} packages`,"Adding up whole packages",`Checking the total against ${b}`],
     loadDay:(d,D)=>`Day ${d} of ${D} — carrying the pantry forward`, loadMsg:(name,pack,price)=>`Matching «${name}» → ${pack}, ${price}`,
     within:"Within budget", over:"Over budget", notreal:"Not realistic", invalid:"No usable plan this time",
     invalidText:"The model's answer did not pass our checks, even after one correction. We show nothing rather than something wrong. Please try again.",
@@ -355,33 +370,34 @@ const T = {
     mapTitle:"Reuse map", mapSub:"Each strand is one ingredient: opened, cooked (knots), and what's left (amber).", legendKnot:"cooked that day", legendBead:"left over, sized by how much", legendDash:"from your pantry", costByDay:"COST OF WHAT IS OPENED EACH DAY", dayWord:"DAY",
     shelfTitle:d=>`What's left on day ${d}`, shelfSub:v=>`Worth about ${v}. Next week's plan starts from here, so nothing is wasted.`, keeps:"Keeps in the cupboard", fridge:"Use within the week", planNext:"↻ Plan next week from these leftovers",
     planTitle:d=>`Your ${d} ${d>1?"days":"day"}`, planSub:(m,p,diet)=>`${m} · ${p} ${p>1?"people":"person"} · ${diet}`, day:"Day", serves:"serves", reusedFrom:"↻ reused from", leftoverTo:"leftover →", ingredients:"Ingredients", method:"Method",
-    receiptTitle:"Shopping list", receiptSub:"Whole packages · Mercadona", copy:"Copy", copied:"Copied", print:"Print", colItem:"Item", colNeed:"Need", colBuy:"Buy", colLeft:"Left", colCost:"€",
+    receiptTitle:"Shopping list", receiptSub:"Whole packages", copy:"Copy", copied:"Copied", print:"Print", colItem:"Item", colNeed:"Need", colBuy:"Buy", colLeft:"Left", colCost:"€",
     atHome:"at home", subtotal:"Subtotal", budgetL:"Budget", remaining:"Remaining", overL:"Over", itemsCount:(i,p)=>`${i} items · ${p} packages`, recipes:"RECIPES BY AI · TOTALS BY CODE", printFor:"Plan for", printTick:"Tick as you shop",
     grains:"Rice, pasta & flour", bread:"Bread", legumes:"Pulses & plant protein", dairy_eggs:"Eggs & dairy", pantry:"Pantry", spices:"Spices", vegetables:"Fruit & vegetables", fruit:"Fruit", meat_fish:"Meat & fish",
     changeTitle:"What you can change", changeSub:"Each one is computed from the same package prices. Pick one, we re-plan.", apply:"Apply", overHint:v=>`You're ${v} over. One change below is enough.`,
     chDays:n=>`Plan ${n} ${n>1?"days":"day"} instead`, chDaysNote:"The last days drop off; leftovers shrink too.", chHome:"Tick these as already at home", chHomeNote:names=>`${names} would be bought and barely used.`, chBudget:v=>`Raise the budget to ${v}`, chBudgetNote:"Same plan, priced honestly.", chModel:"Suggested by the model",
     nrTitle:"We can't plan this honestly", nrSub:(b,p,d,m,n,pm)=>`${b} for ${p} ${p>1?"people":"person"}, ${d} ${d>1?"days":"day"}, ${m} ${m>1?"meals":"meal"} a day is ${n} meals — about ${pm} per person per meal.`,
-    nrWhy:"Why", nrReasons:(n,x)=>["The cheapest full meal we can build from whole Mercadona packages is about €0.85 per person.",`${n} meals × €0.85 = ${x} before any waste.`], nrTry:"Try one of these",
+    nrWhy:"Why", nrReasons:(n,x)=>["The cheapest full meal we can build from whole supermarket packages is about €0.85 per person.",`${n} meals × €0.85 = ${x} before any waste.`], nrTry:"Try one of these",
     nrRaise:v=>`Raise the budget to ${v}`, nrRaiseNote:"Same days, same meals.", nrKeep:(b,d)=>`Keep ${b}, plan ${d} ${d>1?"days":"day"}`, nrKeepNote:"Same meals, fewer days.", nrOne:d=>`Cook for 1, ${d} ${d>1?"days":"day"}`, nrOneNote:"Everything you set, just one person.", nrHome:"Tell us what's at home", nrHomeNote:"Rice, oil, pasta already there cut the basket a lot.",
     nrNo:"No plan was generated. We'd rather say so than hand you a list you can't afford.", edit:"✎ Edit",
     hood:"Under the hood", hoodCalls:n=>`The model was called ${n} time${n>1?"s":""}. Everything else was done by code.`, invalidStep:"rejected by our checks", priced:"priced by code at", saysNo:"the model said the budget is not realistic", problems:"problems",
-    footer:(p,v)=>`Prices: ${p.supermarket}, zone ${p.zone}, captured on ${p.captured_at} (OpenCesta, ODbL). Shelf prices may differ. Allergen information is indicative: always check the label. Recipes are generated by an AI model (prompt ${v}) and are not tested in a kitchen. Totals are calculated by code.`,
+    footer:(p,v)=>`Prices: ${p.name || p.supermarket}, ${zoneName(p.zone)}, captured on ${p.captured_at} (OpenCesta, ODbL). Shelf prices may differ. Allergen information is indicative: always check the label. Recipes are generated by an AI model (prompt ${v}) and are not tested in a kitchen. Totals are calculated by code.`,
     kicker:"Student Meal Planner · Spain", welcomeTitle:"Eat well all week on a student budget.", welcomeLead:"Pick your supermarket. The AI writes the recipes; the code prices every whole package and tells you honestly whether your budget holds.",
-    soon:"Coming soon", soonNote:"Same data format. Prices not loaded yet.", loaded:(n,d,z)=>`${n} products · prices captured ${d} · zone ${z}`, pick:name=>`Plan with ${name} →`, change:"change",
+    loaded:(n,d,z)=>`${n} products · prices of ${d} · ${z}`, notSold:n=>`${n} of our ${TOTAL_STAPLES} staples not sold here`, pick:name=>`Plan with ${name} →`, change:"change",
+    cmpTitle:"Same basket, other shops", cmpSub:"The same recipes priced with the other supermarket's packages. Computed by code, no new plan.", cmpMissing:n=>`${n} ingredient${n>1?"s":""} not sold there, total without ${n>1?"them":"it"}`, cmpAll:"every ingredient available", cmpCheaper:v=>`${v} cheaper`, cmpDearer:v=>`${v} more`, cmpSame:"same price", cmpSwitch:name=>`Plan with ${name} instead`,
     props:[["Whole packages","You can't buy 300 g of a 1 kg bag, so we price the bag and show what's left over."],["Honest verdict","Within budget, over, or not realistic — decided by arithmetic, never by the model."],["Reuse first","Recipes share ingredients across the days so less ends up in the bin."]],
     opened:"opened", tapCell:"tap a meal to see the recipe", close:"Close", recipeNote:"Recipe by AI · quantities and prices by code", legendRe:"reused from an earlier day", legendLo:"leftover kept for a later day" },
-  es: { app:"Student Meal Planner", tag:"Mercadona · España", yourWeek:"Tu semana", presets:"Empezar rápido", budget:"Presupuesto de compra", people:"Personas", days:"Días", meals:"Comidas a planificar",
+  es: { app:"Student Meal Planner", tag:"España", yourWeek:"Tu semana", presets:"Empezar rápido", budget:"Presupuesto de compra", people:"Personas", days:"Días", meals:"Comidas a planificar",
     breakfast:"Desayuno", lunch:"Comida", dinner:"Cena", diet:"Dieta", omnivore:"De todo", pescatarian:"Pescetariana", vegetarian:"Vegetariana", vegan:"Vegana",
     allergies:"Alergias", home:"Ya tengo en casa", avoid:"No quiero", addPh:"Añadir…", note:"Algo más", notePh:"Cocina pequeña, una sartén, sin horno.",
     hint:(pm,n)=>`≈ ${pm} por persona y comida · ${n} comidas`, hintLow:(pm,n)=>`≈ ${pm} por persona y comida · ${n} comidas · por debajo de nuestro mínimo de 0,85 €`,
-    submit:"Planificar mis comidas →", fine:"Los precios vienen de envases de Mercadona. Cada total lo suma el código: la IA nunca toca un precio.",
+    submit:"Planificar mis comidas →", fine:"Los precios vienen de envases reales del supermercado. Cada total lo suma el código: la IA nunca toca un precio.",
     gluten:"Gluten", egg:"Huevo", milk:"Leche", fish:"Pescado", soy:"Soja", peanuts:"Cacahuetes", sesame:"Sésamo", celery:"Apio", mustard:"Mostaza", sulphites:"Sulfitos",
     how:"Cómo funciona", howSub:"Cinco pasos. Uno es IA, tres son código.", you:"Tú", ai:"IA", code:"Código",
-    steps:[["you","Tú pones presupuesto, personas, días y lo que ya tienes.",""],["ai","El modelo propone comidas que reutilizan ingredientes.","Escribe las recetas. Nunca ve ni inventa un precio."],["code","Cada ingrediente se asocia a un envase real de Mercadona.","Solo envases enteros: no puedes comprar 300 g de una bolsa de 1 kg."],["code","Se suman los envases y se calculan las sobras.","Necesario − comprado = lo que queda en tu nevera."],["code","El total se compara con tu presupuesto.","Dentro, por encima o no realista: lo decide la aritmética, no el modelo."]],
+    steps:[["you","Tú pones presupuesto, personas, días y lo que ya tienes.",""],["ai","El modelo propone comidas que reutilizan ingredientes.","Escribe las recetas. Nunca ve ni inventa un precio."],["code","Cada ingrediente se asocia a un envase real de tu supermercado.","Solo envases enteros: no puedes comprar 300 g de una bolsa de 1 kg."],["code","Se suman los envases y se calculan las sobras.","Necesario − comprado = lo que queda en tu nevera."],["code","El total se compara con tu presupuesto.","Dentro, por encima o no realista: lo decide la aritmética, no el modelo."]],
     heroTitle:"Una semana, catorce ingredientes, nada a la basura.", heroSub:"Cada hilo es un ingrediente. Se abre el día que lo cocinas por primera vez, sigue por cada día en que se reutiliza y termina limpio o se queda como sobra. Así será tu plan.",
     promise:"Envases enteros, totales honestos", promiseBody:"La mayoría de planificadores valoran 200 g de arroz. Tú compras la bolsa de 1 kg. Nosotros valoramos la bolsa y te enseñamos lo que sobra para el siguiente plan.",
     loadingTitle:(n,p)=>`Planificando ${n} comidas para ${p} ${p>1?"personas":"persona"}…`, loadingSub:"Suele tardar 15–30 segundos. Primero se escriben las recetas, luego se valoran.",
-    loadSteps:(n,b)=>["Leídas tus condiciones",`Proponiendo ${n} comidas que comparten ingredientes`,"Asociando ingredientes a envases de Mercadona","Sumando envases enteros",`Comparando el total con ${b}`],
+    loadSteps:(n,b,s)=>["Leídas tus condiciones",`Proponiendo ${n} comidas que comparten ingredientes`,`Asociando ingredientes a envases de ${s}`,"Sumando envases enteros",`Comparando el total con ${b}`],
     loadDay:(d,D)=>`Día ${d} de ${D} — arrastrando la despensa`, loadMsg:(name,pack,price)=>`Asociando «${name}» → ${pack}, ${price}`,
     within:"Dentro del presupuesto", over:"Por encima del presupuesto", notreal:"No es realista", invalid:"Esta vez no hay un plan utilizable",
     invalidText:"La respuesta del modelo no ha pasado nuestras comprobaciones, ni siquiera tras una corrección. Preferimos no mostrar nada antes que algo incorrecto. Inténtalo de nuevo.",
@@ -390,29 +406,30 @@ const T = {
     mapTitle:"Mapa de reutilización", mapSub:"Cada hilo es un ingrediente: abierto, cocinado (nudos) y lo que sobra (ámbar).", legendKnot:"cocinado ese día", legendBead:"sobra, según cuánto", legendDash:"de tu despensa", costByDay:"COSTE DE LO QUE SE ABRE CADA DÍA", dayWord:"DÍA",
     shelfTitle:d=>`Lo que queda el día ${d}`, shelfSub:v=>`Vale unos ${v}. El plan de la semana que viene empieza aquí, así no se tira nada.`, keeps:"Aguanta en la despensa", fridge:"Usar esta semana", planNext:"↻ Planificar la semana que viene con estas sobras",
     planTitle:d=>`Tus ${d} ${d>1?"días":"día"}`, planSub:(m,p,diet)=>`${m} · ${p} ${p>1?"personas":"persona"} · ${diet}`, day:"Día", serves:"raciones", reusedFrom:"↻ reutilizado de", leftoverTo:"sobra →", ingredients:"Ingredientes", method:"Preparación",
-    receiptTitle:"Lista de la compra", receiptSub:"Envases enteros · Mercadona", copy:"Copiar", copied:"Copiado", print:"Imprimir", colItem:"Artículo", colNeed:"Nec.", colBuy:"Compra", colLeft:"Sobra", colCost:"€",
+    receiptTitle:"Lista de la compra", receiptSub:"Envases enteros", copy:"Copiar", copied:"Copiado", print:"Imprimir", colItem:"Artículo", colNeed:"Nec.", colBuy:"Compra", colLeft:"Sobra", colCost:"€",
     atHome:"en casa", subtotal:"Subtotal", budgetL:"Presupuesto", remaining:"Te sobran", overL:"Te pasas", itemsCount:(i,p)=>`${i} artículos · ${p} envases`, recipes:"RECETAS POR IA · TOTALES POR CÓDIGO", printFor:"Plan para", printTick:"Marca al comprar",
     grains:"Arroz, pasta y harina", bread:"Pan", legumes:"Legumbres y proteína vegetal", dairy_eggs:"Huevos y lácteos", pantry:"Despensa", spices:"Especias", vegetables:"Frutas y verduras", fruit:"Fruta", meat_fish:"Carne y pescado",
     changeTitle:"Qué puedes cambiar", changeSub:"Cada opción sale de los mismos precios de envase. Elige una y replanificamos.", apply:"Aplicar", overHint:v=>`Te pasas ${v}. Con un cambio de abajo basta.`,
     chDays:n=>`Planifica ${n} ${n>1?"días":"día"} en vez`, chDaysNote:"Caen los últimos días; también sobra menos.", chHome:"Marca esto como ya en casa", chHomeNote:names=>`${names} se compraría y apenas se usaría.`, chBudget:v=>`Sube el presupuesto a ${v}`, chBudgetNote:"El mismo plan, valorado con honestidad.", chModel:"Sugerido por el modelo",
     nrTitle:"No podemos planificar esto con honestidad", nrSub:(b,p,d,m,n,pm)=>`${b} para ${p} ${p>1?"personas":"persona"}, ${d} ${d>1?"días":"día"}, ${m} ${m>1?"comidas":"comida"} al día son ${n} comidas: unos ${pm} por persona y comida.`,
-    nrWhy:"Por qué", nrReasons:(n,x)=>["La comida completa más barata que podemos montar con envases enteros de Mercadona cuesta unos 0,85 € por persona.",`${n} comidas × 0,85 € = ${x} antes de cualquier desperdicio.`], nrTry:"Prueba una de estas",
+    nrWhy:"Por qué", nrReasons:(n,x)=>["La comida completa más barata que podemos montar con envases enteros del supermercado cuesta unos 0,85 € por persona.",`${n} comidas × 0,85 € = ${x} antes de cualquier desperdicio.`], nrTry:"Prueba una de estas",
     nrRaise:v=>`Sube el presupuesto a ${v}`, nrRaiseNote:"Mismos días, mismas comidas.", nrKeep:(b,d)=>`Mantén ${b}, planifica ${d} ${d>1?"días":"día"}`, nrKeepNote:"Mismas comidas, menos días.", nrOne:d=>`Cocina para 1, ${d} ${d>1?"días":"día"}`, nrOneNote:"Todo lo que pusiste, para una persona.", nrHome:"Dinos qué tienes en casa", nrHomeNote:"Arroz, aceite o pasta que ya tengas reducen mucho la cesta.",
     nrNo:"No se ha generado ningún plan. Preferimos decirlo a darte una lista que no puedes pagar.", edit:"✎ Editar",
     hood:"Cómo se ha hecho", hoodCalls:n=>`Se ha llamado al modelo ${n} ${n>1?"veces":"vez"}. Todo lo demás lo ha hecho el código.`, invalidStep:"rechazado por nuestras comprobaciones", priced:"calculado por el código en", saysNo:"el modelo ha dicho que el presupuesto no es realista", problems:"problemas",
-    footer:(p,v)=>`Precios: ${p.supermarket}, zona ${p.zone}, capturados el ${p.captured_at} (OpenCesta, ODbL). Los precios en tienda pueden variar. La información de alérgenos es orientativa: comprueba siempre la etiqueta. Las recetas las genera un modelo de IA (prompt ${v}) y no se han probado en cocina. Los totales los calcula el código.`,
+    footer:(p,v)=>`Precios: ${p.name || p.supermarket}, ${zoneName(p.zone)}, capturados el ${p.captured_at} (OpenCesta, ODbL). Los precios en tienda pueden variar. La información de alérgenos es orientativa: comprueba siempre la etiqueta. Las recetas las genera un modelo de IA (prompt ${v}) y no se han probado en cocina. Los totales los calcula el código.`,
     kicker:"Student Meal Planner · España", welcomeTitle:"Come bien toda la semana con presupuesto de estudiante.", welcomeLead:"Elige tu supermercado. La IA escribe las recetas; el código valora cada envase entero y te dice con honestidad si tu presupuesto aguanta.",
-    soon:"Próximamente", soonNote:"Mismo formato de datos. Precios aún no cargados.", loaded:(n,d,z)=>`${n} productos · precios capturados el ${d} · zona ${z}`, pick:name=>`Planificar con ${name} →`, change:"cambiar",
+    loaded:(n,d,z)=>`${n} productos · precios del ${d} · ${z}`, notSold:n=>`${n} de nuestros ${TOTAL_STAPLES} básicos no se venden aquí`, pick:name=>`Planificar con ${name} →`, change:"cambiar",
+    cmpTitle:"La misma cesta en otros súper", cmpSub:"Las mismas recetas valoradas con los envases del otro supermercado. Lo calcula el código, sin nuevo plan.", cmpMissing:n=>`${n} ingrediente${n>1?"s":""} no se vende${n>1?"n":""} allí, total sin ${n>1?"ellos":"él"}`, cmpAll:"todos los ingredientes disponibles", cmpCheaper:v=>`${v} más barato`, cmpDearer:v=>`${v} más caro`, cmpSame:"mismo precio", cmpSwitch:name=>`Planificar con ${name}`,
     props:[["Envases enteros","No puedes comprar 300 g de una bolsa de 1 kg: valoramos la bolsa y te enseñamos lo que sobra."],["Veredicto honesto","Dentro, por encima o no realista: lo decide la aritmética, nunca el modelo."],["Reutilizar primero","Las recetas comparten ingredientes entre días para que acabe menos en la basura."]],
     opened:"abierto", tapCell:"toca una comida para ver la receta", close:"Cerrar", recipeNote:"Receta por IA · cantidades y precios por código", legendRe:"reutilizado de un día anterior", legendLo:"sobra que se guarda para otro día" }
 };
-const SHOPS = [
-  { id:"mercadona", name:"Mercadona", color:"#1E5A3A", available:true },
-  { id:"dia", name:"Dia", color:"#B33A3A", available:false },
-  { id:"carrefour", name:"Carrefour", color:"#1F4E8C", available:false },
-  { id:"lidl", name:"Lidl", color:"#C99A1B", available:false },
-];
-let shop = null, lastAnalysis = null;
+const SHOP_STYLE = { mercadona:{ color:"#1E5A3A" }, dia:{ color:"#B33A3A" }, ahorramas:{ color:"#1F4E8C" }, carrefour:{ color:"#1F4E8C" }, lidl:{ color:"#C99A1B" } };
+const ZONES = { mad1:{ en:"Madrid", es:"Madrid" }, bcn1:{ en:"Barcelona", es:"Barcelona" }, vlc1:{ en:"Valencia", es:"Valencia" }, "es-default":{ en:"all of Spain", es:"toda España" }, madrid:{ en:"Madrid", es:"Madrid" } };
+const TOTAL_STAPLES = 86;
+let SHOPS = [], shop = null, lastAnalysis = null;
+function shopsFromOptions(o) { return (o.supermarkets || []).map(s => ({ id:s.supermarket, name:s.name, color:(SHOP_STYLE[s.supermarket] || { color:"#5F594E" }).color, available:true, zone:s.zone, captured_at:s.captured_at, products:s.products })); }
+function zoneName(z) { return (ZONES[z] || { en:z, es:z })[lang]; }
+function shopMark(s, size = 44) { return `<span class="mark" style="background:${s.color};width:${size}px;height:${size}px">${s.name[0]}</span>`; }
 const AISLES = ["vegetables","fruit","meat_fish","dairy_eggs","legumes","grains","bread","pantry","spices"];
 const KEEPS = new Set(["pantry","spices","grains","legumes"]);
 const FLOOR = 0.85;
@@ -495,9 +512,9 @@ function paint() {
 
 /* ---------- landing ---------- */
 function renderWelcome() {
-  const p = options && options.prices, n = options ? options.ingredients.length : 0;
+  const cards = SHOPS.length ? SHOPS : [{ id:"", name:"…", color:"#5F594E", available:false }];
   $("welcome").innerHTML = `<div class="kicker">${esc(t("kicker"))}</div><h1>${esc(t("welcomeTitle"))}</h1><p class="lead">${esc(t("welcomeLead"))}</p>
-    <div class="shops">${SHOPS.map(s => `<button type="button" class="shop" data-shop="${s.id}" ${s.available ? "" : "disabled"}>${s.available ? "" : `<span class="soon">${esc(t("soon"))}</span>`}<span class="mark" style="background:${s.color}">${s.name[0]}</span><span class="nm">${s.name}</span><span class="st ${s.available ? "ok" : ""}">${s.available ? (p ? esc(T[lang].loaded(n, p.captured_at, p.zone)) : "…") : esc(t("soonNote"))}</span>${s.available ? `<span class="cta">${esc(T[lang].pick(s.name))}</span>` : ""}</button>`).join("")}</div>
+    <div class="shops">${cards.map(s => `<button type="button" class="shop" data-shop="${s.id}" ${s.available ? "" : "disabled"}>${shopMark(s)}<span class="nm">${esc(s.name)}</span><span class="st ok">${s.available ? esc(T[lang].loaded(s.products, s.captured_at, zoneName(s.zone))) : "…"}</span>${s.available && s.products < TOTAL_STAPLES ? `<span class="st">${esc(T[lang].notSold(TOTAL_STAPLES - s.products))}</span>` : ""}${s.available ? `<span class="cta">${esc(T[lang].pick(s.name))}</span>` : ""}</button>`).join("")}</div>
     <div class="props">${T[lang].props.map(([b, s]) => `<div class="prop"><b>${esc(b)}</b><span>${esc(s)}</span></div>`).join("")}</div>`;
 }
 function showLanding() {
@@ -508,7 +525,10 @@ function chooseShop(id) {
   shop = SHOPS.find(s => s.id === id); if (!shop || !shop.available) return;
   $("welcome").hidden = true; $("app").hidden = false; $("footer").hidden = false; $("shopBtn").hidden = false;
   try { localStorage.setItem("prefs", JSON.stringify({ ...saved, lang, shop: id })); } catch {}
+  lastResult = null;
   paint(); window.scrollTo({ top: 0 });
+  // Package sizes and prices differ per shop: reload the ingredient list for the loading messages and tags.
+  fetch(`/api/options?supermarket=${encodeURIComponent(id)}`).then(r => r.json()).then(o => { options = o; SHOPS = shopsFromOptions(o); paint(); }).catch(() => {});
 }
 function paintShopPill() { if (shop) $("shopBtn").innerHTML = `<i style="background:${shop.color}">${shop.name[0]}</i>${shop.name}<small>· ${esc(t("change"))}</small>`; }
 
@@ -531,7 +551,7 @@ function renderLoading() {
     <div class="frame"><div class="clip" id="loadBraid"></div><div class="pen" id="pen"></div></div>
     <div class="vrow"><span id="loadDay"></span><span id="clock"></span></div>
     <div class="bar" style="margin-top:8px"><div id="loadBar" style="width:0"></div></div>
-    <ul class="check" id="loadSteps">${T[lang].loadSteps(n, money(Math.round(b.budget_eur * 100))).map(s => `<li><span class="disc"></span>${esc(s)}</li>`).join("")}</ul>
+    <ul class="check" id="loadSteps">${T[lang].loadSteps(n, money(Math.round(b.budget_eur * 100)), shop ? shop.name : "").map(s => `<li><span class="disc"></span>${esc(s)}</li>`).join("")}</ul>
     <div class="mono" id="loadMsg" style="margin-top:12px;color:var(--muted)"></div></div>`;
   ThreadedPantry.renderBraid($("loadBraid"), strands, { days: D, width: mobile ? 358 : 760, height: mobile ? 200 : 260, dayWord: t("dayWord") });
   const started = loading.started, thresholds = [0, 2, 8, 18, 24];
@@ -585,6 +605,16 @@ function changesHtml(r, a) {
   if (!items.length) return "";
   return `<div class="card changes"><h2>${t("changeTitle")}</h2><p class="sub">${t("changeSub")}</p>${items.map(i => `<div class="change"><div><b>${esc(i.title)}</b><span>${esc(i.note)}</span></div><div class="right">${i.save != null ? `<span class="save">${i.save >= 0 ? "−" : "+"}${money(Math.abs(i.save))}</span>` : ""}${i.act ? `<button type="button" class="btn" data-act="${i.act}">${t("apply")}</button>` : ""}</div></div>`).join("")}</div>`;
 }
+function comparisonHtml(r) {
+  if (!r.comparison || !r.comparison.length) return "";
+  const rows = r.comparison.map(c => {
+    const style = SHOPS.find(s => s.id === c.supermarket) || { name:c.name, color:"#5F594E" };
+    const diff = c.total_cents - r.budget.total_cents, missing = c.missing.length;
+    const d = diff < 0 ? `<span class="d g">${esc(T[lang].cmpCheaper(money(-diff)))}</span>` : diff > 0 ? `<span class="d r">${esc(T[lang].cmpDearer(money(diff)))}</span>` : `<span class="d">${esc(t("cmpSame"))}</span>`;
+    return `<div class="row">${shopMark({ ...style, name:c.name })}<div><span class="nm">${esc(c.name)}</span><span class="note ${missing ? "warn" : ""}">${missing ? esc(T[lang].cmpMissing(missing)) + ": " + esc(c.missing.map(ingName).join(", ")) : esc(t("cmpAll"))} · ${esc(zoneName(c.zone))}</span><button type="button" class="btn" data-act="shop:${c.supermarket}">${esc(T[lang].cmpSwitch(c.name))}</button></div><div class="tot"><b>${money(c.total_cents)}</b>${d}</div></div>`;
+  }).join("");
+  return `<div class="card"><h2>${esc(t("cmpTitle"))}</h2><p class="sub">${esc(t("cmpSub"))}</p><div class="cmp">${rows}</div></div>`;
+}
 function shelfHtml(r, a) {
   const left = r.shopping_list.filter(l => !l.already_have && l.leftover > 0);
   if (!left.length) return "";
@@ -636,12 +666,12 @@ function receiptHtml(r) {
   let rows = "";
   for (const cat of AISLES) {
     const lines = buy.filter(l => l.category === cat); if (!lines.length) continue;
-    rows += `<div class="aisle">${t(cat)}</div>` + lines.map(l => `<span class="tick"></span>${cell("it", esc(l.name))}${cell("r m", amount(l.needed, l.base_unit))}${cell("r b", `${l.packages}×${l.package_unit === "ud" ? l.package_size : amount(l.package_size * 1000, l.base_unit)}`)}${cell("r " + (l.leftover > 0 ? "a" : "m"), l.leftover > 0 ? amount(l.leftover, l.base_unit) : "—")}${cell("r b", (l.cost_cents / 100).toFixed(2))}`).join("");
+    rows += `<div class="aisle">${t(cat)}</div>` + lines.map(l => `<span class="tick"></span>${cell("it", esc(l.name) + (l.product_name ? `<small title="${esc(l.product_name)}">${esc(l.product_name)}</small>` : ""))}${cell("r m", amount(l.needed, l.base_unit))}${cell("r b", `${l.packages}×${l.package_unit === "ud" ? l.package_size : amount(l.package_size * 1000, l.base_unit)}`)}${cell("r " + (l.leftover > 0 ? "a" : "m"), l.leftover > 0 ? amount(l.leftover, l.base_unit) : "—")}${cell("r b", (l.cost_cents / 100).toFixed(2))}`).join("");
   }
   if (home.length) rows += `<div class="aisle">${t("atHome")}</div>` + home.map(l => `<span class="tick"></span><div class="home" style="display:contents">${cell("it", esc(l.name))}${cell("r m", amount(l.needed, l.base_unit))}${cell("r g", t("atHome"))}${cell("r m", "—")}${cell("r m", "0.00")}</div>`).join("");
-  return `<div class="card" id="receipt-card"><div class="rhead"><div><h2>${t("receiptTitle")}</h2><p class="sub" style="margin:0">${t("receiptSub")} · ${T[lang].itemsCount(buy.length, packages)}</p></div><div style="display:flex;gap:8px"><button type="button" class="btn" id="copy">⧉ ${t("copy")}</button><button type="button" class="btn" onclick="window.print()">⎙ ${t("print")}</button></div></div>
+  return `<div class="card" id="receipt-card"><div class="rhead"><div><h2>${t("receiptTitle")}</h2><p class="sub" style="margin:0">${t("receiptSub")} · ${esc(r.prices.name || "")} · ${T[lang].itemsCount(buy.length, packages)}</p></div><div style="display:flex;gap:8px"><button type="button" class="btn" id="copy">⧉ ${t("copy")}</button><button type="button" class="btn" onclick="window.print()">⎙ ${t("print")}</button></div></div>
     <div class="printhead"><div class="serif" style="font-style:italic;font-size:22px">${t("app")}</div><div class="mono" style="display:flex;justify-content:space-between"><span>${t("receiptSub")}</span><span>${t("printFor")}: ${lastBody.people} · ${lastBody.days} ${t("days").toLowerCase()} · ${lastBody.meals.map(t).join(" + ")} / ${t("printTick")}</span></div></div>
-    <div class="receipt"><div class="c title">MERCADONA</div><div class="c sub2">${t("receiptTitle").toUpperCase()} · ${date}</div>
+    <div class="receipt"><div class="c title">${esc((r.prices.name || "").toUpperCase())}</div><div class="c sub2">${t("receiptTitle").toUpperCase()} · ${date}</div>
     <div class="rgrid"><span class="tick"></span><div class="h">${t("colItem")}</div><div class="h r">${t("colNeed")}</div><div class="h r">${t("colBuy")}</div><div class="h r">${t("colLeft")}</div><div class="h r">${t("colCost")}</div>${rows}</div>
     <div class="rfoot"><div><b>${t("subtotal")}</b></div><div class="r"><b>${money(b.total_cents)}</b></div><div class="m">${t("budgetL")}</div><div class="r m">${money(b.budget_cents)}</div><div class="${b.within_budget ? "g" : "rd"}">${t(b.within_budget ? "remaining" : "overL")}</div><div class="r ${b.within_budget ? "g" : "rd"}">${money(Math.abs(b.difference_cents))}</div><div class="sig">${t("recipes")}</div></div></div></div>`;
 }
@@ -677,7 +707,7 @@ function render(r) {
     const a = analyse(r); lastAnalysis = a;
     html += verdictHtml(r, a);
     if (!r.budget.within_budget) html += changesHtml(r, a);
-    html += planHtml(r, a);
+    html += planHtml(r, a) + comparisonHtml(r);
     html += `<div class="card"><h2>${t("mapTitle")}</h2><p class="sub">${t("mapSub")}</p><div class="map" id="reuseMap"></div>
       <div class="legend"><span><i class="knot"></i>${t("legendKnot")}</span><span><i class="bead"></i>${t("legendBead")}</span><span><i class="dash"></i>${t("legendDash")}</span></div></div>`;
     html += shelfHtml(r, a) + receiptHtml(r);
@@ -701,6 +731,7 @@ function act(code) {
   if (key === "one") { $("people").value = 1; $("days").value = value; }
   if (key === "home" || key === "next") { value.split(",").forEach(id => tags.have.add(id)); renderTags("have"); }
   if (key === "focus") { $("formCol").scrollIntoView({ behavior: "smooth", block: "start" }); if (value === "have") setTimeout(() => $("have").querySelector("input").focus(), 400); return; }
+  if (key === "shop") { const next = SHOPS.find(s => s.id === value); if (!next) return; shop = next; paintShopPill(); try { localStorage.setItem("prefs", JSON.stringify({ ...saved, lang, shop: value })); } catch {} }
   refresh();
   if (key === "next") { $("formCol").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
   $("form").requestSubmit();
@@ -728,7 +759,7 @@ $("form").addEventListener("submit", async e => {
   e.preventDefault();
   if (loading) return;
   const body = { budget_eur:+$("budget").value, people:+$("people").value, days:+$("days").value, meals:picked("meals"), diet:(document.querySelector("#diet input:checked") || {}).value || "omnivore",
-    allergies:picked("allergies"), disliked:[...tags.dislike], already_have:[...tags.have], language:lang, notes:$("notes").value };
+    allergies:picked("allergies"), disliked:[...tags.dislike], already_have:[...tags.have], language:lang, notes:$("notes").value, supermarket: shop ? shop.id : "" };
   try { localStorage.setItem("prefs", JSON.stringify({ ...body, lang })); } catch {}
   lastBody = body; lastResult = null; $("error").textContent = ""; $("go").disabled = true; $("formCol").classList.add("busy");
   loading = { started: Date.now(), timer: null }; renderLoading();
@@ -748,7 +779,7 @@ if (saved.people) $("people").value = saved.people;
 if (saved.days) $("days").value = saved.days;
 if (saved.notes) $("notes").value = saved.notes;
 applyTheme(); paint();
-fetch("/api/options").then(r => r.json()).then(o => { options = o; paint(); }).catch(() => { $("error").textContent = "Could not load the ingredient list. Is the server running?"; });
+fetch("/api/options").then(r => r.json()).then(o => { options = o; SHOPS = shopsFromOptions(o); paint(); }).catch(() => { $("error").textContent = "Could not load the ingredient list. Is the server running?"; });
 </script>
 </body>
 </html>

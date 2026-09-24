@@ -2,7 +2,7 @@
 
 import json
 
-from src.catalogue import allowed_catalogue, load_catalogue
+from src.catalogue import allowed_catalogue, load_catalogue, supermarkets
 from src.plan import PlanRequest, parse_plan, validate_plan
 from src.planner import generate_plan
 from src.prompting import load_prompt, render_prompt
@@ -129,3 +129,27 @@ def test_summary_reports_cost_per_serving_and_value_of_leftovers():
     assert summary["leftover_value_cents"] == 92 + 27
     assert summary["reuse_ratio"] == 1.0
     assert all("category" in line for line in result["shopping_list"])
+
+
+def test_the_same_plan_is_priced_in_every_other_supermarket_by_code():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))
+    assert result["prices"]["supermarket"] == "mercadona"
+    dia = next(row for row in result["comparison"] if row["supermarket"] == "dia")
+    assert dia["total_cents"] == 160 + 90  # Dia: 1 kg rice 1.60 + 400 g lentils 0.90
+    assert dia["missing"] == []
+    assert len(result["comparison"]) == len(supermarkets()) - 1
+
+
+def test_planning_at_dia_prices_with_dia_packages():
+    result = generate_plan(request(supermarket="dia"), FakeModel(reply(CHEAP)))
+    assert result["prices"]["supermarket"] == "dia"
+    assert result["budget"]["total_cents"] == 160 + 90
+    names = {line["ingredient_id"]: line["product_name"] for line in result["shopping_list"]}
+    assert names["rice_round"].startswith("Arroz redondo") and "Dia" in names["rice_round"]
+
+
+def test_an_ingredient_a_shop_does_not_sell_is_reported_not_guessed():
+    tofu = [{"ingredient_id": "tofu", "quantity": 200, "unit": "g"}]
+    result = generate_plan(request(), FakeModel(reply(tofu)))
+    dia = next(row for row in result["comparison"] if row["supermarket"] == "dia")
+    assert dia["missing"] == ["tofu"]

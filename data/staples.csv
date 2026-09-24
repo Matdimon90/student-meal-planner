@@ -1,87 +1,87 @@
-ingredient_id,name_en,name_es,sku,category,diet,allergens
-rice_round,Round rice,Arroz redondo,5044,grains,vegan,
-rice_long,Long-grain rice,Arroz largo,5063,grains,vegan,
-spaghetti,Spaghetti,Espaguetis,6331,grains,vegan,gluten
-macaroni,Macaroni,Macarrones,6326,grains,vegan,gluten
-flour,Wheat flour,Harina de trigo,29100,grains,vegan,gluten
-oats,Rolled oats,Copos de avena,86341,grains,vegan,gluten
-sliced_bread,Sliced white bread,Pan de molde,13810,bread,vegetarian,gluten
-baguette,Bread stick (barra),Barra de pan,83202.1,bread,vegan,gluten
-wheat_tortillas,Wheat tortillas,Tortillas de trigo,80859,bread,vegan,gluten
-breadcrumbs,Breadcrumbs,Pan rallado,82219,bread,vegan,gluten
-lentils_cooked,Cooked lentils (jar),Lentejas cocidas,26030,legumes,vegan,
-lentils_dry,Dry lentils,Lentejas secas,5330,legumes,vegan,
-chickpeas_cooked,Cooked chickpeas (jar),Garbanzos cocidos,26029,legumes,vegan,
-white_beans_cooked,Cooked white beans (jar),Alubias blancas cocidas,26019,legumes,vegan,
-red_beans_cooked,Cooked red beans (jar),Alubias rojas cocidas,26000,legumes,vegan,
-tofu,Firm tofu,Tofu firme,51097,legumes,vegan,soy
-hummus,Hummus,Hummus,80858,legumes,vegan,sesame
-peanuts,Roasted peanuts (unsalted),Cacahuetes tostados,13451,legumes,vegan,peanuts
-eggs_6,Eggs (6),Huevos (6),31540,dairy_eggs,vegetarian,egg
-eggs_12,Eggs (12),Huevos (12),31505,dairy_eggs,vegetarian,egg
-milk,Semi-skimmed milk,Leche semidesnatada,10382,dairy_eggs,vegetarian,milk
-butter,Butter,Mantequilla,20716,dairy_eggs,vegetarian,milk
-yogurt,Plain yogurt (6-pack),Yogur natural,22313,dairy_eggs,vegetarian,milk
-grated_cheese,Grated cheese,Queso rallado,23621,dairy_eggs,vegetarian,milk
-mozzarella,Fresh mozzarella,Mozzarella fresca,51050,dairy_eggs,vegetarian,milk
-cheese_slices,Cheese slices,Queso en lonchas,50371,dairy_eggs,vegetarian,milk
-fresh_cheese,Fresh Burgos cheese,Queso fresco,52408,dairy_eggs,vegetarian,milk
-cooking_cream,Cooking cream,Nata para cocinar,10161,dairy_eggs,vegetarian,milk
-soy_drink,Soy drink,Bebida de soja,14707,dairy_eggs,vegan,soy
-oat_drink,Oat drink,Bebida de avena,52640,dairy_eggs,vegan,gluten
-crushed_tomato,Crushed tomato (can),Tomate triturado,16044,pantry,vegan,
-chopped_tomato,Chopped peeled tomato (can),Tomate troceado,16022,pantry,vegan,
-tomato_frito,Tomato sauce (tomate frito),Tomate frito,17108,pantry,vegan,
-sweetcorn,Sweetcorn (can),Maíz dulce,16714,pantry,vegan,
-peas_canned,Peas (jar),Guisantes,16416,pantry,vegan,
-mushrooms_canned,Sliced mushrooms (can),Champiñones laminados en conserva,16618,pantry,vegan,
-olives_black,Pitted black olives,Aceitunas negras sin hueso,52734,pantry,vegan,
-chicken_stock,Chicken stock (1 l),Caldo de pollo,7313,pantry,meat,celery
-mayonnaise,Mayonnaise,Mayonesa,52728,pantry,vegetarian,egg
-soy_sauce,Soy sauce,Salsa de soja,17360,pantry,vegan,"soy,gluten"
-olive_oil,Olive oil (1 l),Aceite de oliva,4240,pantry,vegan,
-sunflower_oil,Sunflower oil (1 l),Aceite de girasol,4040,pantry,vegan,
-vinegar,White wine vinegar,Vinagre de vino blanco,4940,pantry,vegan,sulphites
-salt,Fine salt,Sal fina,19731,pantry,vegan,
-sugar,White sugar,Azúcar blanco,19897,pantry,vegan,
-black_pepper,Ground black pepper,Pimienta negra molida,34171,spices,vegan,
-paprika,Sweet paprika,Pimentón dulce,60573,spices,vegan,
-oregano,Oregano,Orégano,5598,spices,vegan,
-cumin,Ground cumin,Comino molido,34120,spices,vegan,
-curry,Curry powder,Curry,34125,spices,vegan,mustard
-garlic,Garlic (bulbs),Ajos,69297,vegetables,vegan,
-garlic_frozen,Chopped garlic (frozen),Ajo troceado congelado,61251,vegetables,vegan,
-onions,Onions (1 kg bag),Cebollas,69089,vegetables,vegan,
-onion_frozen,Chopped onion (frozen),Cebolla troceada congelada,13568,vegetables,vegan,
-potato,Potato (one piece),Patata,69066,vegetables,vegan,
-carrots,Carrots (500 g bag),Zanahorias,69669,vegetables,vegan,
-tomato,Plum tomato (one piece),Tomate pera,69912,vegetables,vegan,
-pepper_red,Red pepper (one piece),Pimiento rojo,69310,vegetables,vegan,
-pepper_green,Green pepper (one piece),Pimiento verde,69312,vegetables,vegan,
-zucchini,Zucchini (one piece),Calabacín,69338,vegetables,vegan,
-eggplant,Eggplant (one piece),Berenjena,69326,vegetables,vegan,
-broccoli,Broccoli (one piece),Brócoli,69580,vegetables,vegan,
-cucumber,Cucumber (one piece),Pepino,69584,vegetables,vegan,
-lettuce,Iceberg lettuce,Lechuga iceberg,68130,vegetables,vegan,
-salad_mix,Mixed salad bag,Ensalada mezcla,69706,vegetables,vegan,
-mushrooms_fresh,White mushrooms,Champiñones,26951,vegetables,vegan,
-spinach_frozen,Spinach portions (frozen),Espinacas congeladas,61279,vegetables,vegan,
-green_beans_frozen,Green beans (frozen),Judías verdes congeladas,61283,vegetables,vegan,
-veg_stirfry_frozen,Vegetable stir-fry mix (frozen),Salteado de verduras congelado,61065,vegetables,vegan,
-menestra_frozen,Mixed vegetables (frozen),Menestra congelada,52534,vegetables,vegan,
-banana,Banana (one piece),Banana,3824,fruit,vegan,
-apple,Red apple (one piece),Manzana roja,8177,fruit,vegan,
-orange,Orange (one piece),Naranja,3235,fruit,vegan,
-lemon,Lemon (one piece),Limón,3210,fruit,vegan,
-chicken_breast,Chicken breast fillets,Filetes de pechuga de pollo,2787,meat_fish,meat,
-chicken_thighs,Boneless chicken thighs,Contramuslos de pollo deshuesados,2789,meat_fish,meat,
-chicken_drumsticks,Chicken drumsticks,Jamoncitos de pollo,2778,meat_fish,meat,
-minced_pork,Minced pork,Carne picada de cerdo,2867,meat_fish,meat,sulphites
-minced_beef_pork,Minced beef and pork,Carne picada mixta,2869,meat_fish,meat,sulphites
-minced_chicken,Minced chicken,Carne picada de pollo,35774,meat_fish,meat,sulphites
-sausages,Chicken sausages,Salchichas de pollo,53042,meat_fish,meat,"milk,soy"
-bacon,Bacon strips,Bacón en cintas,16252,meat_fish,meat,
-chorizo,Sliced chorizo,Chorizo en lonchas,59086,meat_fish,meat,milk
-ham,Cooked ham slices,Jamón cocido,13988,meat_fish,meat,
-tuna_oil,Tuna in sunflower oil (cans),Atún claro en aceite de girasol,18092,meat_fish,fish,fish
-salmon_frozen,Salmon medallions (frozen),Medallones de salmón congelados,26749,meat_fish,fish,fish
+ingredient_id,name_en,name_es,category,diet,allergens,piece_grams
+rice_round,Round rice,Arroz redondo,grains,vegan,,
+rice_long,Long-grain rice,Arroz largo,grains,vegan,,
+spaghetti,Spaghetti,Espaguetis,grains,vegan,gluten,
+macaroni,Macaroni,Macarrones,grains,vegan,gluten,
+flour,Wheat flour,Harina de trigo,grains,vegan,gluten,
+oats,Rolled oats,Copos de avena,grains,vegan,gluten,
+sliced_bread,Sliced white bread,Pan de molde,bread,vegetarian,gluten,
+baguette,Bread stick (barra),Barra de pan,bread,vegan,gluten,
+wheat_tortillas,Wheat tortillas,Tortillas de trigo,bread,vegan,gluten,
+breadcrumbs,Breadcrumbs,Pan rallado,bread,vegan,gluten,
+lentils_cooked,Cooked lentils (jar),Lentejas cocidas,legumes,vegan,,
+lentils_dry,Dry lentils,Lentejas secas,legumes,vegan,,
+chickpeas_cooked,Cooked chickpeas (jar),Garbanzos cocidos,legumes,vegan,,
+white_beans_cooked,Cooked white beans (jar),Alubias blancas cocidas,legumes,vegan,,
+red_beans_cooked,Cooked red beans (jar),Alubias rojas cocidas,legumes,vegan,,
+tofu,Firm tofu,Tofu firme,legumes,vegan,soy,
+hummus,Hummus,Hummus,legumes,vegan,sesame,
+peanuts,Roasted peanuts (unsalted),Cacahuetes tostados,legumes,vegan,peanuts,
+eggs_6,Eggs (6),Huevos (6),dairy_eggs,vegetarian,egg,
+eggs_12,Eggs (12),Huevos (12),dairy_eggs,vegetarian,egg,
+milk,Semi-skimmed milk,Leche semidesnatada,dairy_eggs,vegetarian,milk,
+butter,Butter,Mantequilla,dairy_eggs,vegetarian,milk,
+yogurt,Plain yogurt,Yogur natural,dairy_eggs,vegetarian,milk,
+grated_cheese,Grated cheese,Queso rallado,dairy_eggs,vegetarian,milk,
+mozzarella,Fresh mozzarella,Mozzarella fresca,dairy_eggs,vegetarian,milk,
+cheese_slices,Cheese slices,Queso en lonchas,dairy_eggs,vegetarian,milk,
+fresh_cheese,Fresh Burgos cheese,Queso fresco,dairy_eggs,vegetarian,milk,
+cooking_cream,Cooking cream,Nata para cocinar,dairy_eggs,vegetarian,milk,
+soy_drink,Soy drink,Bebida de soja,dairy_eggs,vegan,soy,
+oat_drink,Oat drink,Bebida de avena,dairy_eggs,vegan,gluten,
+crushed_tomato,Crushed tomato (can),Tomate triturado,pantry,vegan,,
+chopped_tomato,Chopped peeled tomato (can),Tomate troceado,pantry,vegan,,
+tomato_frito,Tomato sauce (tomate frito),Tomate frito,pantry,vegan,,
+sweetcorn,Sweetcorn (can),Maíz dulce,pantry,vegan,,
+peas_canned,Peas (jar),Guisantes,pantry,vegan,,
+mushrooms_canned,Sliced mushrooms (can),Champiñones laminados en conserva,pantry,vegan,,
+olives_black,Pitted black olives,Aceitunas negras sin hueso,pantry,vegan,,
+chicken_stock,Chicken stock,Caldo de pollo,pantry,meat,celery,
+mayonnaise,Mayonnaise,Mayonesa,pantry,vegetarian,egg,
+soy_sauce,Soy sauce,Salsa de soja,pantry,vegan,"soy,gluten",
+olive_oil,Olive oil,Aceite de oliva,pantry,vegan,,
+sunflower_oil,Sunflower oil,Aceite de girasol,pantry,vegan,,
+vinegar,White wine vinegar,Vinagre de vino blanco,pantry,vegan,sulphites,
+salt,Fine salt,Sal fina,pantry,vegan,,
+sugar,White sugar,Azúcar blanco,pantry,vegan,,
+black_pepper,Ground black pepper,Pimienta negra molida,spices,vegan,,
+paprika,Sweet paprika,Pimentón dulce,spices,vegan,,
+oregano,Oregano,Orégano,spices,vegan,,
+cumin,Ground cumin,Comino molido,spices,vegan,,
+curry,Curry powder,Curry,spices,vegan,mustard,
+garlic,Garlic,Ajos,vegetables,vegan,,50
+garlic_frozen,Chopped garlic (frozen),Ajo troceado congelado,vegetables,vegan,,
+onions,Onions,Cebollas,vegetables,vegan,,150
+onion_frozen,Chopped onion (frozen),Cebolla troceada congelada,vegetables,vegan,,
+potato,Potato,Patata,vegetables,vegan,,260
+carrots,Carrots,Zanahorias,vegetables,vegan,,80
+tomato,Plum tomato,Tomate pera,vegetables,vegan,,140
+pepper_red,Red pepper,Pimiento rojo,vegetables,vegan,,280
+pepper_green,Green pepper,Pimiento verde,vegetables,vegan,,260
+zucchini,Zucchini,Calabacín,vegetables,vegan,,380
+eggplant,Eggplant,Berenjena,vegetables,vegan,,380
+broccoli,Broccoli,Brócoli,vegetables,vegan,,450
+cucumber,Cucumber,Pepino,vegetables,vegan,,200
+lettuce,Iceberg lettuce,Lechuga iceberg,vegetables,vegan,,
+salad_mix,Mixed salad bag,Ensalada mezcla,vegetables,vegan,,
+mushrooms_fresh,White mushrooms,Champiñones,vegetables,vegan,,
+spinach_frozen,Spinach portions (frozen),Espinacas congeladas,vegetables,vegan,,
+green_beans_frozen,Green beans (frozen),Judías verdes congeladas,vegetables,vegan,,
+veg_stirfry_frozen,Vegetable stir-fry mix (frozen),Salteado de verduras congelado,vegetables,vegan,,
+menestra_frozen,Mixed vegetables (frozen),Menestra congelada,vegetables,vegan,,
+banana,Banana,Banana,fruit,vegan,,180
+apple,Red apple,Manzana roja,fruit,vegan,,190
+orange,Orange,Naranja,fruit,vegan,,270
+lemon,Lemon,Limón,fruit,vegan,,210
+chicken_breast,Chicken breast fillets,Filetes de pechuga de pollo,meat_fish,meat,,
+chicken_thighs,Boneless chicken thighs,Contramuslos de pollo deshuesados,meat_fish,meat,,
+chicken_drumsticks,Chicken drumsticks,Jamoncitos de pollo,meat_fish,meat,,
+minced_pork,Minced pork,Carne picada de cerdo,meat_fish,meat,sulphites,
+minced_beef_pork,Minced beef and pork,Carne picada mixta,meat_fish,meat,sulphites,
+minced_chicken,Minced chicken,Carne picada de pollo,meat_fish,meat,sulphites,
+sausages,Chicken sausages,Salchichas de pollo,meat_fish,meat,"milk,soy",
+bacon,Bacon strips,Bacón en cintas,meat_fish,meat,,
+chorizo,Sliced chorizo,Chorizo en lonchas,meat_fish,meat,milk,
+ham,Cooked ham slices,Jamón cocido,meat_fish,meat,,
+tuna_oil,Tuna in sunflower oil,Atún claro en aceite de girasol,meat_fish,fish,fish,
+salmon_frozen,Salmon medallions (frozen),Medallones de salmón congelados,meat_fish,fish,fish,

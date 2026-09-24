@@ -1,8 +1,8 @@
-# Student Meal Planner for student 
+# Student Meal Planner
 
 AI meal planner and grocery budgeting for students living in Spain.
 
-Give it a budget, a number of people and days, and what you cannot or will not eat. It returns a meal plan, simple recipes, and a shopping list priced with real Mercadona prices, in whole packages, compared with your budget. If the budget is not realistic, it says so.
+Give it a budget, a number of people and days, and what you cannot or will not eat. Pick your supermarket (Mercadona or Dia). It returns a meal plan, simple recipes, and a shopping list priced with that shop's real packages, compared with your budget, plus what the same basket would cost in the other shop. If the budget is not realistic, it says so.
 
 Course project for DAT32-91 Prompt Engineering & Git, Albert School.
 
@@ -31,7 +31,7 @@ How we work together: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | Python 3, FastAPI | Backend and all calculations |
 | HTML, CSS, JavaScript (one file, no framework) | Web page, English and Spanish |
 | Anthropic API (Claude Haiku 4.5 by default, Sonnet 5 optional) | Proposes meals and recipes as JSON |
-| OpenCesta open dataset | Real Mercadona prices, dated snapshot |
+| OpenCesta open dataset | Real Mercadona and Dia prices, dated snapshot |
 | pytest | Automated tests |
 | Git, GitHub (issues, branches, pull requests, reviews) | Collaboration and project history |
 | Vercel | Hosting |
@@ -107,7 +107,7 @@ _(To complete at the end: what works today, a screenshot, the final evaluation s
 
 ## Limitations
 
-- Prices are frozen on 2026-09-21, Mercadona, Madrid zone only. Shelf prices will differ.
+- Prices are frozen on 2026-09-21: Mercadona (Madrid online zone) and Dia (national online shop). Shelf prices will differ. Dia sells no tofu online, so vegan plans priced at Dia may miss one ingredient; the app says so.
 - 86 ingredients, one product per ingredient, usually the cheapest store brand.
 - Allergen and diet tags were written by us, not read from labels. **Always check the label.**
 - Recipes come from an AI model and are not tested in a kitchen. Quantities are checked for plausibility only.

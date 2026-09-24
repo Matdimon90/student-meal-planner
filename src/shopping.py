@@ -40,11 +40,31 @@ class Product:
     category: str = ""
     diet: str = "vegan"  # "vegan", "vegetarian", "fish" or "meat"
     allergens: frozenset = frozenset()
+    # Average weight of one piece, for produce people count rather than weigh
+    # (one banana, two tomatoes). 0 means "not sold by the piece".
+    piece_grams: float = 0
+    product_name: str = ""  # the real product name in the shop
+    supermarket: str = ""  # which snapshot this row comes from
 
     @property
     def recipe_unit(self) -> str:
         """The unit recipes must use for this product: g, ml or ud."""
         return TO_BASE_UNIT[self.package_unit][0]
+
+    def accepts_unit(self, unit: str) -> bool:
+        """Recipes may count produce in pieces ("2 ud" of banana) when we know a piece's weight."""
+        return unit in TO_BASE_UNIT and (
+            TO_BASE_UNIT[unit][0] == self.recipe_unit or (unit == "ud" and self.piece_grams > 0 and self.recipe_unit == "g")
+        )
+
+    def to_recipe_base(self, quantity: float, unit: str) -> float:
+        """Convert a recipe quantity to this product's base unit (g, ml or ud)."""
+        if unit == "ud" and self.piece_grams > 0 and self.recipe_unit == "g":
+            return quantity * self.piece_grams
+        base_quantity, base_unit = to_base(quantity, unit)
+        if base_unit != self.recipe_unit:
+            raise ShoppingError(f"'{self.ingredient_id}' is sold in {self.package_unit} but the recipe asks for {unit}")
+        return base_quantity
 
 
 @dataclass(frozen=True)
@@ -100,13 +120,9 @@ def consolidate(needs: list[IngredientNeed], catalogue: dict[str, Product]) -> d
         if product is None:
             raise ShoppingError(f"'{need.ingredient_id}' is not in the price catalogue")
 
-        quantity, base_unit = to_base(need.quantity, need.unit)
-        _, product_base_unit = to_base(product.package_size, product.package_unit)
-        if base_unit != product_base_unit:
-            raise ShoppingError(
-                f"'{need.ingredient_id}' is sold in {product.package_unit} "
-                f"but the recipe asks for {need.unit}"
-            )
+        if need.quantity <= 0:
+            raise ShoppingError(f"Quantity must be positive, got {need.quantity}")
+        quantity = product.to_recipe_base(need.quantity, need.unit)
         totals[need.ingredient_id] = totals.get(need.ingredient_id, 0) + quantity
     return totals
 

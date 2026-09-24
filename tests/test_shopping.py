@@ -133,3 +133,29 @@ def test_format_euros():
     assert format_euros(283) == "2.83 €"
     assert format_euros(5) == "0.05 €"
     assert format_euros(-33) == "-0.33 €"
+
+
+# ---------- produce counted in pieces ----------
+# Some things are sold by weight but counted by everyone: bananas, tomatoes,
+# potatoes. When we know an average piece weight, a recipe may say "2 ud".
+BANANA = Product("banana", "Banana", "Banana", 28, 0.18, "kg", piece_grams=180)
+
+
+def test_pieces_are_converted_to_grams_with_the_average_weight():
+    assert BANANA.accepts_unit("ud") and BANANA.accepts_unit("g")
+    assert BANANA.to_recipe_base(2, "ud") == 360
+    lines = build_shopping_list([IngredientNeed("banana", 2, "ud")], {"banana": BANANA})
+    assert line_for(lines, "banana").needed == 360
+    assert line_for(lines, "banana").packages == 2
+    assert line_for(lines, "banana").cost_cents == 56
+
+
+def test_pieces_and_grams_of_the_same_produce_add_up():
+    needs = [IngredientNeed("banana", 1, "ud"), IngredientNeed("banana", 100, "g")]
+    assert consolidate(needs, {"banana": BANANA}) == {"banana": 280}
+
+
+def test_pieces_are_still_rejected_for_things_not_sold_by_the_piece():
+    assert not CATALOGUE["rice"].accepts_unit("ud")
+    with pytest.raises(ShoppingError, match="sold in kg"):
+        build_shopping_list([IngredientNeed("rice", 2, "ud")], CATALOGUE)

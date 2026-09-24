@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info
+from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supermarkets
 
 
 @pytest.fixture(scope="module")
@@ -75,3 +75,38 @@ def test_unknown_diet_or_allergen_is_an_error(catalogue):
         allowed_catalogue(catalogue, diet="carnivore")
     with pytest.raises(ValueError):
         allowed_catalogue(catalogue, allergies=frozenset({"kryptonite"}))
+
+
+# ---------- several supermarkets ----------
+def test_mercadona_is_the_default_and_dia_is_available():
+    assert supermarkets()[0] == "mercadona"
+    assert "dia" in supermarkets()
+
+
+def test_each_supermarket_has_its_own_snapshot():
+    mercadona, dia = load_catalogue(supermarket="mercadona"), load_catalogue(supermarket="dia")
+    assert mercadona["rice_round"].supermarket == "mercadona"
+    assert dia["rice_round"].supermarket == "dia"
+    assert mercadona["rice_round"].package_price_cents != dia["rice_round"].package_price_cents
+    # Same ingredient ids everywhere, so one meal plan can be priced in any shop.
+    assert set(dia) <= set(mercadona)
+
+
+def test_a_shop_may_not_sell_everything():
+    assert "tofu" in load_catalogue(supermarket="mercadona")
+    assert "tofu" not in load_catalogue(supermarket="dia")
+
+
+def test_unknown_supermarket_is_an_error():
+    with pytest.raises(KeyError, match="No price snapshot"):
+        load_catalogue(supermarket="lidl")
+
+
+def test_snapshot_info_names_the_shop_and_counts_products():
+    info = snapshot_info(supermarket="dia")
+    assert info["name"] == "Dia" and info["products"] == 85 and info["captured_at"] == "2026-09-21"
+
+
+def test_produce_carries_an_average_piece_weight(catalogue):
+    assert catalogue["banana"].piece_grams == 180
+    assert catalogue["rice_round"].piece_grams == 0

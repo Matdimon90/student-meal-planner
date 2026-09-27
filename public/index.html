@@ -370,7 +370,7 @@ const T = {
     mapTitle:"Reuse map", mapSub:"Each strand is one ingredient: opened, cooked (knots), and what's left (amber).", legendKnot:"cooked that day", legendBead:"left over, sized by how much", legendDash:"from your pantry", costByDay:"COST OF WHAT IS OPENED EACH DAY", dayWord:"DAY",
     shelfTitle:d=>`What's left on day ${d}`, shelfSub:v=>`Worth about ${v}. Next week's plan starts from here, so nothing is wasted.`, keeps:"Keeps in the cupboard", fridge:"Use within the week", planNext:"↻ Plan next week from these leftovers",
     planTitle:d=>`Your ${d} ${d>1?"days":"day"}`, planSub:(m,p,diet)=>`${m} · ${p} ${p>1?"people":"person"} · ${diet}`, day:"Day", serves:"serves", reusedFrom:"↻ reused from", leftoverTo:"leftover →", ingredients:"Ingredients", method:"Method",
-    receiptTitle:"Shopping list", receiptSub:"Whole packages", copy:"Copy", copied:"Copied", print:"Print", colItem:"Item", colNeed:"Need", colBuy:"Buy", colLeft:"Left", colCost:"€",
+    receiptTitle:"Shopping list", receiptSub:"Whole packages", copy:"Copy", copied:"Copied", print:"Print", download:"Download", colItem:"Item", colNeed:"Need", colBuy:"Buy", colLeft:"Left", colCost:"€",
     atHome:"at home", subtotal:"Subtotal", budgetL:"Budget", remaining:"Remaining", overL:"Over", itemsCount:(i,p)=>`${i} items · ${p} packages`, recipes:"RECIPES BY AI · TOTALS BY CODE", printFor:"Plan for", printTick:"Tick as you shop",
     grains:"Rice, pasta & flour", bread:"Bread", legumes:"Pulses & plant protein", dairy_eggs:"Eggs & dairy", pantry:"Pantry", spices:"Spices", vegetables:"Fruit & vegetables", fruit:"Fruit", meat_fish:"Meat & fish",
     changeTitle:"What you can change", changeSub:"Each one is computed from the same package prices. Pick one, we re-plan.", apply:"Apply", overHint:v=>`You're ${v} over. One change below is enough.`,
@@ -406,7 +406,7 @@ const T = {
     mapTitle:"Mapa de reutilización", mapSub:"Cada hilo es un ingrediente: abierto, cocinado (nudos) y lo que sobra (ámbar).", legendKnot:"cocinado ese día", legendBead:"sobra, según cuánto", legendDash:"de tu despensa", costByDay:"COSTE DE LO QUE SE ABRE CADA DÍA", dayWord:"DÍA",
     shelfTitle:d=>`Lo que queda el día ${d}`, shelfSub:v=>`Vale unos ${v}. El plan de la semana que viene empieza aquí, así no se tira nada.`, keeps:"Aguanta en la despensa", fridge:"Usar esta semana", planNext:"↻ Planificar la semana que viene con estas sobras",
     planTitle:d=>`Tus ${d} ${d>1?"días":"día"}`, planSub:(m,p,diet)=>`${m} · ${p} ${p>1?"personas":"persona"} · ${diet}`, day:"Día", serves:"raciones", reusedFrom:"↻ reutilizado de", leftoverTo:"sobra →", ingredients:"Ingredientes", method:"Preparación",
-    receiptTitle:"Lista de la compra", receiptSub:"Envases enteros", copy:"Copiar", copied:"Copiado", print:"Imprimir", colItem:"Artículo", colNeed:"Nec.", colBuy:"Compra", colLeft:"Sobra", colCost:"€",
+    receiptTitle:"Lista de la compra", receiptSub:"Envases enteros", copy:"Copiar", copied:"Copiado", print:"Imprimir", download:"Descargar", colItem:"Artículo", colNeed:"Nec.", colBuy:"Compra", colLeft:"Sobra", colCost:"€",
     atHome:"en casa", subtotal:"Subtotal", budgetL:"Presupuesto", remaining:"Te sobran", overL:"Te pasas", itemsCount:(i,p)=>`${i} artículos · ${p} envases`, recipes:"RECETAS POR IA · TOTALES POR CÓDIGO", printFor:"Plan para", printTick:"Marca al comprar",
     grains:"Arroz, pasta y harina", bread:"Pan", legumes:"Legumbres y proteína vegetal", dairy_eggs:"Huevos y lácteos", pantry:"Despensa", spices:"Especias", vegetables:"Frutas y verduras", fruit:"Fruta", meat_fish:"Carne y pescado",
     changeTitle:"Qué puedes cambiar", changeSub:"Cada opción sale de los mismos precios de envase. Elige una y replanificamos.", apply:"Aplicar", overHint:v=>`Te pasas ${v}. Con un cambio de abajo basta.`,
@@ -669,7 +669,7 @@ function receiptHtml(r) {
     rows += `<div class="aisle">${t(cat)}</div>` + lines.map(l => `<span class="tick"></span>${cell("it", esc(l.name) + (l.product_name ? `<small title="${esc(l.product_name)}">${esc(l.product_name)}</small>` : ""))}${cell("r m", amount(l.needed, l.base_unit))}${cell("r b", `${l.packages}×${l.package_unit === "ud" ? l.package_size : amount(l.package_size * 1000, l.base_unit)}`)}${cell("r " + (l.leftover > 0 ? "a" : "m"), l.leftover > 0 ? amount(l.leftover, l.base_unit) : "—")}${cell("r b", (l.cost_cents / 100).toFixed(2))}`).join("");
   }
   if (home.length) rows += `<div class="aisle">${t("atHome")}</div>` + home.map(l => `<span class="tick"></span><div class="home" style="display:contents">${cell("it", esc(l.name))}${cell("r m", amount(l.needed, l.base_unit))}${cell("r g", t("atHome"))}${cell("r m", "—")}${cell("r m", "0.00")}</div>`).join("");
-  return `<div class="card" id="receipt-card"><div class="rhead"><div><h2>${t("receiptTitle")}</h2><p class="sub" style="margin:0">${t("receiptSub")} · ${esc(r.prices.name || "")} · ${T[lang].itemsCount(buy.length, packages)}</p></div><div style="display:flex;gap:8px"><button type="button" class="btn" id="copy">⧉ ${t("copy")}</button><button type="button" class="btn" onclick="window.print()">⎙ ${t("print")}</button></div></div>
+  return `<div class="card" id="receipt-card"><div class="rhead"><div><h2>${t("receiptTitle")}</h2><p class="sub" style="margin:0">${t("receiptSub")} · ${esc(r.prices.name || "")} · ${T[lang].itemsCount(buy.length, packages)}</p></div><div style="display:flex;gap:8px"><button type="button" class="btn" id="copy">⧉ ${t("copy")}</button><button type="button" class="btn" id="download">⭳ ${t("download")}</button><button type="button" class="btn" onclick="window.print()">⎙ ${t("print")}</button></div></div>
     <div class="printhead"><div class="serif" style="font-style:italic;font-size:22px">${t("app")}</div><div class="mono" style="display:flex;justify-content:space-between"><span>${t("receiptSub")}</span><span>${t("printFor")}: ${lastBody.people} · ${lastBody.days} ${t("days").toLowerCase()} · ${lastBody.meals.map(t).join(" + ")} / ${t("printTick")}</span></div></div>
     <div class="receipt"><div class="c title">${esc((r.prices.name || "").toUpperCase())}</div><div class="c sub2">${t("receiptTitle").toUpperCase()} · ${date}</div>
     <div class="rgrid"><span class="tick"></span><div class="h">${t("colItem")}</div><div class="h r">${t("colNeed")}</div><div class="h r">${t("colBuy")}</div><div class="h r">${t("colLeft")}</div><div class="h r">${t("colCost")}</div>${rows}</div>
@@ -697,6 +697,14 @@ function hoodHtml(r) {
   const items = r.trace.map(s => (s.seconds ? `${s.seconds} s · ` : "") + (s.result === "invalid" ? `#${s.call}: ${t("invalidStep")} (${s.problems.length} ${t("problems")})<ul>${s.problems.slice(0, 5).map(p => `<li><code>${esc(p)}</code></li>`).join("")}</ul>` : s.result === "priced" ? `#${s.call}: ${t("priced")} ${money(s.total_cents)}` : `#${s.call}: ${t("saysNo")}`));
   return `<details class="hood"><summary>${t("hood")}</summary><p>${T[lang].hoodCalls(r.trace.length)}</p><ul>${items.map(i => `<li>${i}</li>`).join("")}</ul></details>`;
 }
+function shoppingListText(r) {
+  const buy = r.shopping_list.filter(l => !l.already_have), b = r.budget;
+  const date = new Date().toLocaleDateString(lang === "es" ? "es-ES" : "en-GB");
+  const head = `${t("app")} — ${t("receiptTitle")}\n${(r.prices.name || "")} · ${date}\n${t("printFor")}: ${lastBody.people} · ${lastBody.days} ${t("days").toLowerCase()} · ${lastBody.meals.map(t).join(" + ")}\n`;
+  const lines = buy.map(l => `- ${l.name}: ${l.packages} × ${l.package_size} ${l.package_unit} (${money(l.cost_cents)})`).join("\n");
+  const foot = `\n${t("subtotal")}: ${money(b.total_cents)}\n${t("budgetL")}: ${money(b.budget_cents)}\n${t(b.within_budget ? "remaining" : "overL")}: ${money(Math.abs(b.difference_cents))}`;
+  return `${head}\n${lines}\n${foot}\n`;
+}
 function render(r) {
   lastResult = r;
   const b = lastBody;
@@ -715,8 +723,15 @@ function render(r) {
     ThreadedPantry.renderBraid($("reuseMap"), a.strands, { days: a.D, labels: true, dayCosts: a.dayCosts, dayWord: t("dayWord"), costWord: t("costByDay"), scale: innerWidth < 600 ? 0.8 : 1, formatMoney: v => money(Math.round(v * 100)) });
     const copy = $("copy");
     copy.onclick = async () => {
-      const text = r.shopping_list.filter(l => !l.already_have).map(l => `- ${l.name}: ${l.packages} × ${l.package_size} ${l.package_unit} (${money(l.cost_cents)})`).join("\n") + `\n${t("subtotal")}: ${money(r.budget.total_cents)}`;
-      try { await navigator.clipboard.writeText(text); copy.textContent = "✓ " + t("copied"); setTimeout(() => copy.textContent = "⧉ " + t("copy"), 1500); } catch {}
+      try { await navigator.clipboard.writeText(shoppingListText(r)); copy.textContent = "✓ " + t("copied"); setTimeout(() => copy.textContent = "⧉ " + t("copy"), 1500); } catch {}
+    };
+    $("download").onclick = () => {
+      const blob = new Blob([shoppingListText(r)], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `shopping-list-${new Date().toISOString().slice(0, 10)}.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
     return;
   }

@@ -69,7 +69,7 @@ Online version: _(Vercel link, to add)_. It may ask for an access code, because 
 ## Project structure
 
 ```
-app.py                  web entry point (FastAPI): /api/options, /api/plan
+app.py                  web entry point (FastAPI): /api/options, /api/plan, /api/swap
 public/index.html       the web page (EN/ES)
 src/
   shopping.py           quantities, whole packages, total, budget check   (no AI)
@@ -118,4 +118,3 @@ _(To complete at the end: what works today, a screenshot, the final evaluation s
 - More supermarkets (Dia is already in the same dataset) and automatic weekly price refresh.
 - Carry leftovers from one week to the next.
 - Nutrition targets (protein, calories).
-- Let the user swap a single meal without regenerating the whole plan.

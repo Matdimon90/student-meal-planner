@@ -385,7 +385,7 @@ const T = {
     loaded:(n,d,z)=>`${n} products · prices of ${d} · ${z}`, notSold:n=>`${n} of our ${TOTAL_STAPLES} staples not sold here`, pick:name=>`Plan with ${name} →`, change:"change",
     cmpTitle:"Same basket, other shops", cmpSub:"The same recipes priced with the other supermarket's packages. Computed by code, no new plan.", cmpMissing:n=>`${n} ingredient${n>1?"s":""} not sold there, total without ${n>1?"them":"it"}`, cmpAll:"every ingredient available", cmpCheaper:v=>`${v} cheaper`, cmpDearer:v=>`${v} more`, cmpSame:"same price", cmpSwitch:name=>`Plan with ${name} instead`,
     props:[["Whole packages","You can't buy 300 g of a 1 kg bag, so we price the bag and show what's left over."],["Honest verdict","Within budget, over, or not realistic — decided by arithmetic, never by the model."],["Reuse first","Recipes share ingredients across the days so less ends up in the bin."]],
-    opened:"opened", tapCell:"tap a meal to see the recipe", close:"Close", recipeNote:"Recipe by AI · quantities and prices by code", legendRe:"reused from an earlier day", legendLo:"leftover kept for a later day" },
+    opened:"opened", tapCell:"tap a meal to see the recipe", close:"Close", swap:"Swap this meal", swapping:"Swapping", recipeNote:"Recipe by AI · quantities and prices by code", legendRe:"reused from an earlier day", legendLo:"leftover kept for a later day" },
   es: { app:"Student Meal Planner", tag:"España", yourWeek:"Tu semana", presets:"Empezar rápido", budget:"Presupuesto de compra", people:"Personas", days:"Días", meals:"Comidas a planificar",
     breakfast:"Desayuno", lunch:"Comida", dinner:"Cena", diet:"Dieta", omnivore:"De todo", pescatarian:"Pescetariana", vegetarian:"Vegetariana", vegan:"Vegana",
     allergies:"Alergias", home:"Ya tengo en casa", avoid:"No quiero", addPh:"Añadir…", note:"Algo más", notePh:"Cocina pequeña, una sartén, sin horno.",
@@ -421,7 +421,7 @@ const T = {
     loaded:(n,d,z)=>`${n} productos · precios del ${d} · ${z}`, notSold:n=>`${n} de nuestros ${TOTAL_STAPLES} básicos no se venden aquí`, pick:name=>`Planificar con ${name} →`, change:"cambiar",
     cmpTitle:"La misma cesta en otros súper", cmpSub:"Las mismas recetas valoradas con los envases del otro supermercado. Lo calcula el código, sin nuevo plan.", cmpMissing:n=>`${n} ingrediente${n>1?"s":""} no se vende${n>1?"n":""} allí, total sin ${n>1?"ellos":"él"}`, cmpAll:"todos los ingredientes disponibles", cmpCheaper:v=>`${v} más barato`, cmpDearer:v=>`${v} más caro`, cmpSame:"mismo precio", cmpSwitch:name=>`Planificar con ${name}`,
     props:[["Envases enteros","No puedes comprar 300 g de una bolsa de 1 kg: valoramos la bolsa y te enseñamos lo que sobra."],["Veredicto honesto","Dentro, por encima o no realista: lo decide la aritmética, nunca el modelo."],["Reutilizar primero","Las recetas comparten ingredientes entre días para que acabe menos en la basura."]],
-    opened:"abierto", tapCell:"toca una comida para ver la receta", close:"Cerrar", recipeNote:"Receta por IA · cantidades y precios por código", legendRe:"reutilizado de un día anterior", legendLo:"sobra que se guarda para otro día" }
+    opened:"abierto", tapCell:"toca una comida para ver la receta", close:"Cerrar", swap:"Cambiar este plato", swapping:"Cambiando", recipeNote:"Receta por IA · cantidades y precios por código", legendRe:"reutilizado de un día anterior", legendLo:"sobra que se guarda para otro día" }
 };
 const SHOP_STYLE = { mercadona:{ color:"#1E5A3A" }, dia:{ color:"#B33A3A" }, ahorramas:{ color:"#1F4E8C" }, carrefour:{ color:"#1F4E8C" }, lidl:{ color:"#C99A1B" } };
 const ZONES = { mad1:{ en:"Madrid", es:"Madrid" }, bcn1:{ en:"Barcelona", es:"Barcelona" }, vlc1:{ en:"Valencia", es:"Valencia" }, "es-default":{ en:"all of Spain", es:"toda España" }, madrid:{ en:"Madrid", es:"Madrid" } };
@@ -656,8 +656,32 @@ function openRecipe(key) {
     return `<li>${esc(i.name)} · ${amount(i.quantity, i.unit)}${note ? `<small>${esc(note)}</small>` : ""}</li>`; }).join("");
   $("recipe").innerHTML = `<div class="rcp"><div class="caps">${t("day")} ${d} · ${t(meal)} · ${m.servings} ${t("serves")}</div><h2>${esc(m.recipe_name)}</h2>
     <div class="cols"><div><h4>${t("ingredients")}</h4><ul>${rows}</ul></div><div><h4>${t("method")}</h4><ol>${m.steps.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div></div>
-    <div class="foot"><span class="mono" style="color:var(--muted)">${esc(t("recipeNote"))}</span><button type="button" class="btn" data-close>${esc(t("close"))}</button></div></div>`;
+    <div class="foot"><span class="mono" style="color:var(--muted)">${esc(t("recipeNote"))}</span><div style="display:flex;gap:8px"><button type="button" class="btn" data-swap="${d}_${meal}">↻ ${esc(t("swap"))}</button><button type="button" class="btn" data-close>${esc(t("close"))}</button></div></div></div>`;
   $("recipe").showModal();
+}
+async function swapMeal(key) {
+  if (!lastResult || loading) return;
+  const [d, meal] = key.split("_");
+  const btn = document.querySelector(`[data-swap="${key}"]`);
+  const original = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = "… " + t("swapping"); }
+  const plan_meals = lastResult.meals.map(m => ({
+    day: m.day, meal: m.meal, recipe_name: m.recipe_name, servings: m.servings,
+    ingredients: m.ingredients.map(i => ({ ingredient_id: i.ingredient_id, quantity: i.quantity, unit: i.unit })),
+    steps: m.steps,
+  }));
+  const body = { ...lastBody, day: +d, meal, plan_meals };
+  try {
+    const response = await fetch("/api/swap", { method: "POST", headers: { "Content-Type": "application/json", "X-Access-Code": $("code").value }, body: JSON.stringify(body) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : (data.detail || []).map(x => x.msg).join(", ") || response.statusText);
+    $("recipe").close();
+    render(data);
+    if (innerWidth < 960) $("right").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (error) {
+    if (btn) { btn.disabled = false; btn.textContent = original; }
+    $("error").textContent = error.message;
+  }
 }
 function receiptHtml(r) {
   const buy = r.shopping_list.filter(l => !l.already_have), home = r.shopping_list.filter(l => l.already_have), b = r.budget;
@@ -738,10 +762,11 @@ function act(code) {
 }
 document.addEventListener("click", e => {
   if (e.target === $("recipe")) { $("recipe").close(); return; }
-  const el = e.target.closest("[data-step],[data-preset],[data-lang],[data-remove],[data-plus],[data-act],[data-shop],[data-open],[data-close],#shopBtn");
+  const el = e.target.closest("[data-step],[data-preset],[data-lang],[data-remove],[data-plus],[data-act],[data-shop],[data-open],[data-swap],[data-close],#shopBtn");
   if (!el) return;
   if (el.dataset.shop) chooseShop(el.dataset.shop);
   else if (el.id === "shopBtn") showLanding();
+  else if (el.dataset.swap) swapMeal(el.dataset.swap);
   else if (el.dataset.open) openRecipe(el.dataset.open);
   else if (el.hasAttribute("data-close")) $("recipe").close();
   else if (el.dataset.step) { const i = $(el.dataset.step); i.value = Math.min(+i.max, Math.max(+i.min, (+i.value || 0) + +el.dataset.by)); refresh(); }

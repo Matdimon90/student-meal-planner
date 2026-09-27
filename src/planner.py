@@ -16,11 +16,12 @@ import time
 from dataclasses import asdict
 
 from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supermarkets
-from src.plan import PlanFormatError, PlanRequest, parse_plan, validate_plan, validate_request
-from src.prompting import render_prompt
-from src.shopping import build_shopping_list, check_budget, format_euros
+from src.plan import Meal, MealPlan, PlanFormatError, PlanRequest, RequestError, parse_plan, validate_plan, validate_request
+from src.prompting import render_prompt, render_swap_prompt
+from src.shopping import IngredientNeed, build_shopping_list, check_budget, format_euros
 
 DEFAULT_PROMPT_VERSION = "v4"
+SWAP_PROMPT_VERSION = "swap"
 MAX_REPAIRS = 1
 MAX_CHEAPER_RETRIES = 1
 
@@ -107,6 +108,83 @@ def generate_plan(request: PlanRequest, call_model, prompt_version: str = DEFAUL
             return _result("over_budget", request, prompt_version, trace, catalogue, plan, lines, check)
         cheaper_left -= 1
         messages.append({"role": "user", "content": _cheaper_message(check, lines, catalogue)})
+
+
+def _meal_from_dict(data: dict) -> Meal:
+    """Rebuild a Meal from the JSON the web page sends back (it came from us)."""
+    return Meal(
+        day=int(data["day"]),
+        meal=str(data["meal"]),
+        recipe_name=str(data["recipe_name"]),
+        servings=int(data["servings"]),
+        ingredients=tuple(
+            IngredientNeed(str(i["ingredient_id"]), float(i["quantity"]), str(i["unit"]))
+            for i in data["ingredients"]
+        ),
+        steps=tuple(str(step) for step in data["steps"]),
+    )
+
+
+def swap_meal(request: PlanRequest, current_meals: list, day: int, meal: str, call_model,
+              prompt_version: str = SWAP_PROMPT_VERSION, catalogue: dict = None) -> dict:
+    """Replace one meal in an existing plan and re-price the whole plan.
+
+    The model proposes a single new recipe for the (day, meal) slot; the code
+    validates it, keeps the other meals untouched, and prices everything again.
+    Same result shape as generate_plan, so the web page renders it the same way.
+    """
+    validate_request(request)
+    catalogue = catalogue or load_catalogue(supermarket=request.supermarket or None)
+    allowed = allowed_catalogue(catalogue, request.diet, request.allergies, request.disliked)
+
+    try:
+        meals = [_meal_from_dict(m) for m in current_meals]
+    except (KeyError, TypeError, ValueError) as error:
+        raise RequestError(f"The current plan could not be read: {error}")
+    if (day, meal) not in request.slots:
+        raise RequestError(f"This plan has no {meal} on day {day}")
+    target = next((m for m in meals if m.day == day and m.meal == meal), None)
+    others = [m for m in meals if not (m.day == day and m.meal == meal)]
+
+    system, user_message = render_swap_prompt(request, allowed, day, meal, target.recipe_name if target else "", others)
+    messages = [{"role": "user", "content": user_message}]
+    trace = []
+    repairs_left = MAX_REPAIRS
+    candidate = None
+
+    while True:
+        started = time.perf_counter()
+        reply = call_model(system, messages)
+        seconds = round(time.perf_counter() - started, 1)
+        messages.append({"role": "assistant", "content": reply})
+
+        try:
+            parsed = parse_plan(reply)
+            proposed = parsed.meals[0] if parsed.meals else None
+            if proposed is None:
+                problems = ["NO_MEAL: the reply contained no meal"]
+            else:
+                # Trust the model for the recipe, not for the slot: force day, meal and servings.
+                new_meal = Meal(day=day, meal=meal, recipe_name=proposed.recipe_name,
+                                servings=request.people, ingredients=proposed.ingredients, steps=proposed.steps)
+                candidate = MealPlan(feasible=True, reason=parsed.reason, meals=tuple(others + [new_meal]))
+                problems = validate_plan(candidate, request, catalogue, allowed)
+        except PlanFormatError as error:
+            problems = [f"BAD_FORMAT: {error}"]
+
+        if problems:
+            trace.append({"call": len(trace) + 1, "seconds": seconds, "result": "invalid", "problems": problems})
+            if repairs_left == 0:
+                return _result("invalid_plan", request, prompt_version, trace, catalogue)
+            repairs_left -= 1
+            messages.append({"role": "user", "content": _repair_message(problems)})
+            continue
+
+        lines = build_shopping_list(candidate.needs, allowed, request.already_have)
+        check = check_budget(lines, round(request.budget_eur * 100))
+        trace.append({"call": len(trace) + 1, "seconds": seconds, "result": "priced", "total_cents": check.total_cents})
+        status = "ok" if check.within_budget else "over_budget"
+        return _result(status, request, prompt_version, trace, catalogue, candidate, lines, check)
 
 
 def _summary(request: PlanRequest, plan, shopping_list: list, check) -> dict:

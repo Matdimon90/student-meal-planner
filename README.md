@@ -66,7 +66,7 @@ uvicorn app:app --reload
 
 Open http://127.0.0.1:8000, fill in the form, press "Plan my meals". A plan takes up to a minute.
 
-**Online version.** Not deployed yet: run it locally for now. The Vercel configuration is in the repository (`vercel.json`), and the deployed version asks for an access code, because every plan costs us model calls.
+**Online version.** https://student-meal-planner-two.vercel.app — it asks for an access code, because every plan costs us model calls (ask the team for it). Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
 
 ## Project structure
 
@@ -117,10 +117,10 @@ What works today, end to end:
 - **An honest no.** An impossible budget is refused with the arithmetic that justifies it instead of a plan nobody can afford. A user insisting that 5 EUR is enough for three people for a week is still refused.
 - **Swap one meal** without regenerating the week: the slot and the servings are forced by the code, the new meal is validated like a fresh plan, and the whole basket is priced again.
 - **English and Spanish**, recipes included.
-- **The prompt is measured, not felt.** Six versions, five of them scored on the same rubric and the same 10 cases (the v6 run is still to do); the shipped one (v4) scores 58/60. The full history, including the version that scored *lower* than the one before it, is in [`docs/prompt-log.md`](docs/prompt-log.md).
+- **The prompt is measured, not felt.** Six versions scored on the same rubric and the same 10 cases; the shipped one (v4) and the last one (v6) both score 58/60. Two ablations (v3 with one rule removed) measure what a single rule is worth. The full history, including the version that scored *lower* than the one before it, is in [`docs/prompt-log.md`](docs/prompt-log.md).
 - **95 automated tests** (`python3 -m pytest`, no API key needed: the model is faked) and they run on every pull request.
 
-Still open: the runs that fill the last tables of the prompt log (v6, the two ablations, sonnet vs haiku), a deployed URL, and a screenshot in this README. How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md).
+How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md).
 
 ## Limitations
 

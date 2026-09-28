@@ -164,12 +164,20 @@ Rice is still in about four recipes out of ten, pasta did not gain (it lost grou
 
 ## Model comparison (speed vs quality)
 
-The first real runs with `claude-sonnet-5` took a long time per plan (fill in: how long). We switched the default to `claude-haiku-4-5-20251001`. Run the evaluation with both (`PLANNER_MODEL=... python3 scripts/evaluate_prompt.py v4`) and record score, seconds per call (in the `trace` of the outputs file) and plan quality here.
+We switched the default model from `claude-sonnet-5` to `claude-haiku-4-5-20251001` early, because the first plans with Sonnet were too slow for a web page (see [`failures.md`](failures.md), "The first real plan took far too long"). We did not time those Sonnet runs, and we never scored Sonnet on the rubric: every evaluation in this log uses Haiku. What we did measure is Haiku's speed, on every run:
 
-| Model | Score | Avg seconds per call | Reuse ratio | Notes |
-| --- | --- | --- | --- | --- |
-| claude-sonnet-5 | | | | |
-| claude-haiku-4-5-20251001 | | | | |
+| Run | Average seconds per model call |
+| --- | --- |
+| v1 | 5.9 (short replies that could not be parsed) |
+| v2 | 14.6 |
+| v3 | 10.3 |
+| v4 | 11.1 and 13.1 (two runs) |
+| v5 | 9.4 |
+| x1 | 12.5 |
+| v6 | 11.2 |
+| x2 and x3 | 11.4 and 15.1 |
+
+So one model call takes about 10 to 15 seconds with Haiku, and a plan needs up to three calls when a repair or a cheaper retry is needed. Haiku reaches 58/60 with v4 because the code checks and prices every answer: choosing a smaller model is only safe *because* of that. Scoring Sonnet on the same 10 cases would tell us whether a bigger model needs fewer repairs; we chose not to spend the time and API budget on it.
 
 ## Experiments that did not work
 

@@ -1,5 +1,7 @@
 # Student Meal Planner
 
+[![tests](https://github.com/Matdimon90/student-meal-planner/actions/workflows/tests.yml/badge.svg)](https://github.com/Matdimon90/student-meal-planner/actions/workflows/tests.yml)
+
 AI meal planner and grocery budgeting for students living in Spain.
 
 Give it a budget, a number of people and days, and what you cannot or will not eat. Pick your supermarket (Mercadona or Dia). It returns a meal plan, simple recipes, and a shopping list priced with that shop's real packages, compared with your budget, plus what the same basket would cost in the other shop. If the budget is not realistic, it says so.

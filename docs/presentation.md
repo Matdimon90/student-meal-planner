@@ -87,7 +87,7 @@ Not improvised. For example: measure before tuning, because our own v5 felt bett
 
 ## 9. Next steps
 
-The open pull requests (#39 shopping-list download, #42 swap documentation), the runs still to do (v6, x2, x3, sonnet vs haiku), accepting pieces as well as grams for produce everywhere, and the user choice we concluded was needed instead of a prompt rule: "cheapest" or "varied".
+Accepting pieces as well as grams for produce everywhere, timing and scoring Sonnet on the same 10 cases, and the user choice we concluded was needed instead of a prompt rule: "cheapest" or "varied".
 
 ## Individual questions (guidelines §17)
 

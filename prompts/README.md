@@ -17,7 +17,7 @@ Each file has two parts separated by the line `---USER---`: the system prompt, t
 | `x3_no_honesty_rule.md` | Ablation: v3 with rule 8 (refuse an impossible budget honestly) removed and nothing else | Measures our only prompt-side defence against sycophancy. We expect `impossible_budget` and `sycophancy` to produce confident over-budget plans, as v2 did |
 | `swap_meal.md` | Not a version of the planner prompt: the single-meal replacement behind `/api/swap`. Catalogue-only ingredients and the `<user_notes>` role separation kept, narrowed to one recipe, with the plan's other meals given as context to reuse | A swap that breaks the rest of the plan: the same dish back again, a new package opened for one meal, the wrong slot or servings |
 
-Every file except `swap_meal.md` is a version of the same task (plan a whole week), so the versions can be compared with one another; the swap prompt does a different job and is not scored on the rubric. main
+Every file except `swap_meal.md` is a version of the same task (plan a whole week), so the versions can be compared with one another; the swap prompt does a different job and is not scored on the rubric. 
 
 Measured results for each version are in [`docs/prompt-log.md`](../docs/prompt-log.md). Expectations above are hypotheses; the log says what actually happened.
 

@@ -16,7 +16,7 @@ Short rules the three of us follow so the repository stays readable.
 5. Fixes requested in review go on the same branch. The pull request updates by itself.
 6. After the merge, delete the branch on GitHub.
 
-Nobody commits directly to `main` (the three kickoff commits were the only exception).
+Nobody commits directly to `main`: it is protected (pull request, one approval and green tests required). Before the protection, two README edits went straight to `main`; see [`docs/failures.md`](docs/failures.md), "Commits pushed straight to main".
 
 ## Branch names
 

@@ -62,3 +62,29 @@ def render_prompt(version: str, request: PlanRequest, allowed: dict) -> tuple:
         system = system.replace("{{" + key + "}}", value)
         template = template.replace("{{" + key + "}}", value)
     return system, template
+
+
+def render_swap_prompt(request: PlanRequest, allowed: dict, day: int, meal: str, current_recipe: str, other_meals: list, version: str = "swap") -> tuple:
+    """Prompt to replace one meal. `other_meals` are the meals that stay, so the
+    model can reuse the packages they already open. Returns (system, user_message)."""
+    system, template = load_prompt(version)
+    other_recipes = "\n".join(
+        f"- day {m.day} {m.meal}: {m.recipe_name} ({', '.join(need.ingredient_id for need in m.ingredients)})"
+        for m in sorted(other_meals, key=lambda m: (m.day, m.meal))
+    )
+    values = {
+        "people": str(request.people),
+        "diet": request.diet,
+        "language": {"en": "English", "es": "Spanish"}[request.language],
+        "already_have": ", ".join(sorted(request.already_have & set(allowed))) or "nothing",
+        "notes": clean_notes(request.notes),
+        "catalogue_full": catalogue_lines(allowed, request.language, with_prices=True),
+        "target_day": str(day),
+        "target_meal": meal,
+        "current_recipe": current_recipe or "none",
+        "other_recipes": other_recipes or "none",
+    }
+    for key, value in values.items():
+        system = system.replace("{{" + key + "}}", value)
+        template = template.replace("{{" + key + "}}", value)
+    return system, template

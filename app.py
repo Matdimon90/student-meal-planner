@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, load_catalogue, snapshot_info, supermarkets
 from src.llm import call_claude
 from src.plan import MAX_BUDGET_EUR, MAX_DAYS, MAX_NOTES_CHARS, MAX_PEOPLE, MEAL_TYPES, PlanRequest, RequestError
-from src.planner import DEFAULT_PROMPT_VERSION, generate_plan
+from src.planner import DEFAULT_PROMPT_VERSION, generate_plan, swap_meal
 
 app = FastAPI(title="Student Meal Planner")
 
@@ -31,6 +31,60 @@ class PlanBody(BaseModel):
     language: str = "en"
     notes: str = ""
     supermarket: str = ""  # empty = default supermarket
+
+
+class SwapBody(PlanBody):
+    day: int  # the day of the meal to replace
+    meal: str  # "lunch" etc.
+    plan_meals: List[dict] = []  # the current plan's meals, as returned by /api/plan
+
+
+def _require_access_code(x_access_code: str) -> None:
+    # Each model call costs us real money. If ACCESS_CODE is set on the server,
+    # only people who know it (us, the teacher) can spend it.
+    expected = os.environ.get("ACCESS_CODE")
+    if expected and x_access_code != expected:
+        raise HTTPException(status_code=401, detail="Wrong or missing access code")
+
+
+def _require_api_key() -> None:
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        raise HTTPException(status_code=503, detail="ANTHROPIC_API_KEY is not set. Put it in the .env file (or in Vercel's environment variables) and restart the server.")
+
+
+def _request_from(body: "PlanBody") -> PlanRequest:
+    return PlanRequest(
+        budget_eur=body.budget_eur,
+        people=body.people,
+        days=body.days,
+        meals=tuple(body.meals),
+        diet=body.diet,
+        allergies=frozenset(body.allergies),
+        disliked=frozenset(body.disliked),
+        already_have=frozenset(body.already_have),
+        language=body.language,
+        notes=body.notes,
+        supermarket=body.supermarket,
+    )
+
+
+def _model_call_failed(error: Exception) -> HTTPException:
+    hints = {
+        "AuthenticationError": "the API key was refused. Check ANTHROPIC_API_KEY.",
+        "PermissionDeniedError": "this API key is not allowed to use the model.",
+        "NotFoundError": "the model name is unknown. Check PLANNER_MODEL.",
+        "RateLimitError": "too many requests or no credit left. Wait a minute and try again.",
+        "APIConnectionError": "no network connection to the model provider.",
+    }
+    reason = hints.get(type(error).__name__, type(error).__name__)
+    if type(error).__name__ == "BadRequestError":
+        # The provider explains what it did not like; show it, but never a key.
+        reason = "the request was refused: " + str(error).replace(os.environ.get("ANTHROPIC_API_KEY", "x"), "***")[:300]
+    return HTTPException(status_code=502, detail=f"The language model call failed: {reason}")
 
 
 @app.get("/api/options")
@@ -61,48 +115,29 @@ def options(supermarket: str = ""):
 
 @app.post("/api/plan")
 def plan(body: PlanBody, x_access_code: str = Header(default="")):
-    # Each plan costs us real money in model calls. If ACCESS_CODE is set on the
-    # server, only people who know it (us, the teacher) can generate plans.
-    expected = os.environ.get("ACCESS_CODE")
-    if expected and x_access_code != expected:
-        raise HTTPException(status_code=401, detail="Wrong or missing access code")
-
-    request = PlanRequest(
-        budget_eur=body.budget_eur,
-        people=body.people,
-        days=body.days,
-        meals=tuple(body.meals),
-        diet=body.diet,
-        allergies=frozenset(body.allergies),
-        disliked=frozenset(body.disliked),
-        already_have=frozenset(body.already_have),
-        language=body.language,
-        notes=body.notes,
-        supermarket=body.supermarket,
-    )
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        from dotenv import load_dotenv
-
-        load_dotenv()
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        raise HTTPException(status_code=503, detail="ANTHROPIC_API_KEY is not set. Put it in the .env file (or in Vercel's environment variables) and restart the server.")
+    _require_access_code(x_access_code)
+    request = _request_from(body)
+    _require_api_key()
     try:
         return generate_plan(request, call_claude)
     except RequestError as error:
         raise HTTPException(status_code=422, detail=str(error))
     except Exception as error:  # missing key, network problem, provider error
-        hints = {
-            "AuthenticationError": "the API key was refused. Check ANTHROPIC_API_KEY.",
-            "PermissionDeniedError": "this API key is not allowed to use the model.",
-            "NotFoundError": "the model name is unknown. Check PLANNER_MODEL.",
-            "RateLimitError": "too many requests or no credit left. Wait a minute and try again.",
-            "APIConnectionError": "no network connection to the model provider.",
-        }
-        reason = hints.get(type(error).__name__, type(error).__name__)
-        if type(error).__name__ == "BadRequestError":
-            # The provider explains what it did not like; show it, but never a key.
-            reason = "the request was refused: " + str(error).replace(os.environ.get("ANTHROPIC_API_KEY", "x"), "***")[:300]
-        raise HTTPException(status_code=502, detail=f"The language model call failed: {reason}")
+        raise _model_call_failed(error)
+
+
+@app.post("/api/swap")
+def swap(body: SwapBody, x_access_code: str = Header(default="")):
+    """Replace a single meal in an existing plan without regenerating the rest."""
+    _require_access_code(x_access_code)
+    request = _request_from(body)
+    _require_api_key()
+    try:
+        return swap_meal(request, body.plan_meals, body.day, body.meal, call_claude)
+    except RequestError as error:
+        raise HTTPException(status_code=422, detail=str(error))
+    except Exception as error:
+        raise _model_call_failed(error)
 
 
 # Local development only: on Vercel, public/ is served before this app is reached.

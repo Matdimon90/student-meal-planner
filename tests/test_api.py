@@ -85,6 +85,37 @@ def test_model_failure_gives_502_without_leaking_details(monkeypatch):
     assert "sk-ant" not in response.text
 
 
+SWAP_REPLY = json.dumps(
+    {
+        "feasible": True,
+        "reason": "reuses the rice",
+        "meals": [
+            {
+                "day": 1,
+                "meal": "dinner",
+                "recipe_name": "Tomato rice",
+                "servings": 1,
+                "ingredients": [{"ingredient_id": "rice_round", "quantity": 120, "unit": "g"}],
+                "steps": ["Cook."],
+            }
+        ],
+        "suggestions": [],
+    }
+)
+
+
+def test_swap_endpoint_replaces_one_meal(monkeypatch):
+    monkeypatch.setattr(app_module, "call_claude", lambda system, messages: SWAP_REPLY)
+    current = [
+        {"day": 1, "meal": "dinner", "recipe_name": "Rice and lentils", "servings": 1,
+         "ingredients": [{"ingredient_id": "rice_round", "quantity": 100, "unit": "g"}], "steps": ["Cook."]}
+    ]
+    body = {**BODY, "day": 1, "meal": "dinner", "plan_meals": current}
+    data = client.post("/api/swap", json=body).json()
+    assert data["status"] == "ok"
+    assert data["meals"][0]["recipe_name"] == "Tomato rice"
+
+
 def test_options_lists_supermarkets_and_switches_prices():
     data = client.get("/api/options").json()
     assert [s["supermarket"] for s in data["supermarkets"]][:2] == ["mercadona", "dia"]

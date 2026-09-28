@@ -53,6 +53,24 @@ What happened? Why? What did we try? What did we learn?
 
 See [`decisions.md`](decisions.md), point 2. The first plan (call a price API) was abandoned after research.
 
+## Git mistakes
+
+We left these mistakes in the history instead of rewriting `main`: rewriting shared
+history would break everyone's copy, and the mistakes are part of what we learned.
+
+### A pull request merged into the wrong branch (#2)
+
+- **What happened.** Pull request #2 (`feature/shopping-maths`) was merged into
+`docs/contributing` instead of `main`. The shopping maths only reached `main` later, when
+pull request #3 merged `docs/contributing`.
+- **Why.** When you open a pull request, GitHub asks for a *base* branch: the branch that
+will receive the changes. `docs/contributing` was picked instead of `main`. The line
+"wants to merge into ..." is easy to miss, and nobody noticed it before merging either.
+- **Fix.** Nothing was lost, because pull request #3 was merged just after, so we left it
+as it was. If #3 had been closed, the shopping maths would never have reached `main`.
+- **Learned.** Read the base branch before creating a pull request, and again before
+approving one. Always start a new branch from an up-to-date `main`.
+
 ## _Add yours_
 
 _Merge conflicts, prompts that failed, Vercel problems... Keep the four questions._

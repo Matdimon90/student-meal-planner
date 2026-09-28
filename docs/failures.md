@@ -53,6 +53,16 @@ What happened? Why? What did we try? What did we learn?
 
 See [`decisions.md`](decisions.md), point 2. The first plan (call a price API) was abandoned after research.
 
-## _Add yours_
+## Our first merge conflict: two branches, the same table row
 
-_Merge conflicts, prompts that failed, Vercel problems... Keep the four questions._
+- **What happened.** `prompt/experiment-model-total` (the x1 experiment) had been open for a while. Meanwhile v5 was merged into `main`. Bringing `main` back into the branch stopped on `CONFLICT (content): Merge conflict in prompts/README.md`. `docs/prompt-log.md` merged by itself even though both sides had also written in it.
+- **Why.** Both branches added a row at the *end* of the same Markdown table, so both sides changed the same line. Git has no idea that two new table rows can simply live next to each other; that is a human decision. `prompt-log.md` was fine because the two sides wrote in different sections of the file, far apart.
+- **Fix.** Keep both rows, in the order the versions were written (x1 then v5), delete the `<<<<<<<` / `=======` / `>>>>>>>` markers, check that the table still renders, commit the resolution. It is commit `9c95f9e`, and the resolution is visible with `git show --cc 9c95f9e`.
+- **Learned.** Two things. A conflict is not an error, it is Git refusing to guess; the fix took a minute because both changes were small and we understood both. And the real lesson for the way we work: append-only tables and logs conflict every single time two people work in parallel, so it is better to merge `main` into a long-lived branch early and often than to discover four days of divergence at the end. To replay it without touching anything: `git merge-tree --write-tree 8123f4e 6d15add`.
+
+## The course brief was sitting inside the repository
+
+- **What happened.** `[students] DAT32-91_Prompt_Engineering_Git_Project_Guidelines.docx` was saved in the project folder, so `git status` offered to commit it and a `git add -A` staged it into a local commit. We caught it before pushing (`git reset --soft HEAD~1`, unstage the file, commit again), so it never reached the shared history.
+- **Why it matters.** The repository is our work; the teacher's brief is not ours to redistribute, and a binary `.docx` in a Git history cannot be diffed or removed cleanly afterwards.
+- **Fix.** Added to `.gitignore` (`*.docx`, and the brief by name) so the file can stay in the working folder without ever being staged again.
+- **Learned.** Check what `git add -A` is about to stage. An untracked file in the working folder is one careless `git add` away from being in the history for good.

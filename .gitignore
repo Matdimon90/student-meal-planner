@@ -12,6 +12,9 @@ venv/
 outputs/*
 !outputs/.gitkeep
 
+# Course material: the brief is the teacher's document, not ours to redistribute
+*.docx
+
 # macOS and editors
 .DS_Store
 .vscode/

@@ -24,6 +24,8 @@ Each version is a file in [`prompts/`](../prompts). Scores come from `python3 sc
 | v3 | 2026-09-23 | 10/10 | 9/10 | 10/10 | 9/10 | 6/10 | 8/10 | 52/60 | 14 |
 | v4 | 2026-09-23 | 10/10 | 10/10 | 10/10 | 9/10 | 9/10 | 10/10 | 58/60 | 11 |
 | v5 | 2026-09-23 | 10/10 | 9/10 | 10/10 | 8/10 | 6/10 | 9/10 | 52/60 | 14 |
+| v4 (re-run) | 2026-09-24 | 10/10 | 10/10 | 10/10 | 10/10 | 9/10 | 9/10 | 58/60 | 11 |
+| v6 | 2026-09-28 | 10/10 | 10/10 | 10/10 | 10/10 | 8/10 | 10/10 | 58/60 | 12 |
 
 ### Quality of the plans (not part of the score)
 
@@ -35,6 +37,8 @@ The script also prints three numbers for the plans that could be priced. They sh
 | v3 | 1.88 | 1.89 | 56% |
 | v4 | 2.22 | 1.51 | 51% |
 | v5 | 1.74 | 1.74 | 50% |
+| v4 (re-run) | 2.17 | 1.41 | 47% |
+| v6 | 2.20 | 1.46 | 45% |
 
 Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 6 s per model call.
 
@@ -144,7 +148,17 @@ The one remaining failure is the same as in v2 and v3: `big_week` writes `banana
 
 **What we expected.** Reuse ratio and budget hold at the v4 level (they are governed by the unchanged rules), while the menu widens: fewer rice-only plans, the rice and pasta bases roughly balanced, and "Egg fried rice" no longer in a quarter of the plans.
 
-**What happened.** _To run: `python3 scripts/evaluate_prompt.py v6` (needs an API key), then paste the row into the Scores table above and quote one plan. The question to answer: did diversifying the example widen the menu without the budget/reuse regression that adding a rule caused in v5?_
+**What happened** (2026-09-28). 58/60 with 12 model calls: the same score as v4, which also scored 58/60 when we re-ran it on 2026-09-24 after the piece-weight change of #36. No regression on budget or reuse either: reuse ratio 2.20 (v4: 2.22 and 2.17), 1.46 EUR per serving (v4: 1.51 and 1.41), 45% of the money on leftovers (v4: 51% and 47%). The second example cost nothing. But it did not buy what we wanted. We counted keywords in the recipe names of the first replies (a short script over `outputs/`, no model call):
+
+| Run | Recipes | With rice | With pasta | With lentils | "Egg fried rice" | Different names |
+| --- | --- | --- | --- | --- | --- | --- |
+| v4 (2026-09-23) | 63 | 26 (41%) | 15 (24%) | 10 (16%) | 3 | 57 (90%) |
+| v4 (2026-09-24) | 63 | 29 (46%) | 13 (21%) | 13 (21%) | 2 | 61 (97%) |
+| v6 (2026-09-28) | 77 | 31 (40%) | 11 (14%) | 16 (21%) | 4 | 66 (86%) |
+
+Rice is still in about four recipes out of ten, pasta did not gain (it lost ground), lentils moved a little, and "Egg fried rice" is still there. The pasta-and-lentils example did not move the menu towards pasta. Our best explanation, not tested: rice is the cheapest base per serving in our catalogue, and the unchanged rules (whole packages, estimate the cost, make it cheaper if over budget) push every plan towards it. The menu follows the prices more than the examples. A keyword count on recipe names is a rough measure, but it is enough to see that the menu did not widen.
+
+**Kept?** No. v6 ties v4 on every number we score and does not do the one thing it was written for, while making every request longer. v4 stays the shipped prompt. v5 and v6 point to the same next step from two directions: variety should be a user choice ("cheapest" or "varied"), not something we try to force through the prompt.
 
 **Risk to watch.** The copy problem may simply shift, not disappear: plans could become pasta-and-lentil-heavy instead of rice-heavy. If so, the lesson is that few-shot examples set the menu whatever we do, and real variety needs a user choice ("cheapest" vs "varied") rather than more examples — the same conclusion v5 pointed to from the other direction.
 

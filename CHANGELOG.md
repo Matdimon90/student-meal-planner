@@ -5,10 +5,28 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Added
-- Repo hygiene: MIT `LICENSE`, issue templates, this changelog, and a CI badge in the README.
+## [1.0.0] — 2026-09-28
 
-## [0.1.0] — 2026-09-23
+The version handed in for DAT32-91 Prompt Engineering & Git.
+
+### Added
+- Swap a single meal without regenerating the week: `/api/swap` and a one-recipe prompt (`prompts/swap_meal.md`). The code forces the day and servings, validates the new meal like a full plan and prices the whole basket again (#41, documented in #42).
+- Download button for the shopping list, next to Copy and Print (#39).
+- Prompt v6: the v4 rules with a second, pasta-and-lentils example (#40). It scored 58/60 like v4 but did not widen the menu, so v4 stays the shipped prompt (#55).
+- Ablations x2 and x3: v3 without the reuse rule and without the honesty rule, with predictions written before the run. Both predictions were wrong: the retry message in the code turned out to be a second honesty defence (#50).
+- Failures log: our Git mistakes (a pull request merged into the wrong branch, commits pushed straight to `main`, our first merge conflict) and the course brief kept out of the history (#51, #54).
+- MIT licence for the code (the data in `data/` stays under ODbL), issue templates, this changelog and a CI badge in the README (#38).
+- Plan for the final presentation and oral defence in `docs/presentation.md` (#52).
+
+### Changed
+- README: link to the live site, final result and the real challenges we met (#53).
+- Prompt log: v6 results, the v4 re-run after the piece weights, and the Haiku speeds measured on every run instead of an empty model comparison (#55).
+- `main` is protected: every change goes through a pull request, needs one approval and green tests.
+
+### Fixed
+- Oscar's surname in the README team table (#37).
+
+## [0.1.0] — 2026-09-24
 
 First working version, built for the DAT32-91 Prompt Engineering & Git course.
 
@@ -29,4 +47,6 @@ First working version, built for the DAT32-91 Prompt Engineering & Git course.
 - Test suite (pytest) and a GitHub Actions workflow that runs it on every pull request.
 - Project docs: AI approach, prompt log, decisions, failures.
 
-[Unreleased]: https://github.com/Matdimon90/student-meal-planner/compare/main...HEAD
+[Unreleased]: https://github.com/Matdimon90/student-meal-planner/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Matdimon90/student-meal-planner/compare/v0.1.0...v1.0.0
+[0.1.0]: https://github.com/Matdimon90/student-meal-planner/releases/tag/v0.1.0

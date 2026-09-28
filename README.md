@@ -66,7 +66,7 @@ uvicorn app:app --reload
 
 Open http://127.0.0.1:8000, fill in the form, press "Plan my meals". A plan takes up to a minute.
 
-Online version: _(Vercel link, to add)_. It may ask for an access code, because every plan costs us model calls.
+**Online version.** https://student-meal-planner-two.vercel.app — it asks for an access code, because every plan costs us model calls (ask the team for it). Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
 
 ## Project structure
 
@@ -80,11 +80,11 @@ src/
   prompting.py          loads a prompt version and fills it in
   llm.py                the only file that calls the model API
   planner.py            the pipeline that ties everything together
-prompts/                one file per prompt version (v1 to v4) + README
+prompts/                one file per prompt version (v1 to v6), the ablations, the swap prompt + README
 data/                   price snapshot, our ingredient list, source and limits
 scripts/                build the price snapshot, evaluate a prompt version
 tests/                  automated tests + the 10 prompt test cases
-docs/                   AI approach, prompt log, decisions, failures
+docs/                   AI approach, prompt log, decisions, failures, presentation plan
 outputs/                evaluation results (generated, not committed)
 ```
 
@@ -92,7 +92,7 @@ outputs/                evaluation results (generated, not committed)
 
 **In the product.** The model proposes meals, quantities and steps as JSON, choosing only from our ingredient catalogue. Python checks the answer, builds the shopping list, prices it and decides whether the budget is respected. The model never calculates the total. Full explanation, pipeline diagram and the LLM failure modes we handle: [`docs/ai-approach.md`](docs/ai-approach.md).
 
-**Prompt engineering.** Four prompt versions (zero-shot → structured output → constraints and role separation → few-shot), each scored with the same rubric on the same 10 test cases, including an impossible budget, a sycophancy trap and a prompt injection. Scores and what we learned: [`docs/prompt-log.md`](docs/prompt-log.md).
+**Prompt engineering.** Six prompt versions (zero-shot → structured output → constraints and role separation → few-shot → two written from our own results), scored with the same rubric on the same 10 test cases, including an impossible budget, a sycophancy trap and a prompt injection. Plus experiments that answer a question rather than improve the score: can the model add up the bill itself (no, it is wrong by 17 EUR on average), and what each rule is actually worth when we remove it. Scores and what we learned: [`docs/prompt-log.md`](docs/prompt-log.md).
 
 **In development.** Code was written with Claude as a coding assistant, in small slices. Every slice went through a branch, a pull request and a review by a teammate who had to understand it before approving. We ran and wrote up the prompt experiments ourselves.
 
@@ -101,11 +101,26 @@ outputs/                evaluation results (generated, not committed)
 - No supermarket offers a price API. We use a dated open-data snapshot and say so everywhere.
 - Models are unreliable with money. We moved every calculation into tested code.
 - Models invent ingredients and agree too easily. We validate every answer and price it ourselves.
-- _(Add the real ones as they happen.)_ Full list: [`docs/failures.md`](docs/failures.md).
+- The Anthropic SDK dropped the `temperature` parameter our textbook uses, so we cannot make the model repeatable. Every answer is validated in code instead.
+- Our tests fake the model, which means they cannot catch anything about the real API. One real call, early, found what 95 green tests could not.
+- Two branches appending a row to the same Markdown table conflict every time. We merge `main` into long-lived branches early now.
+- A prompt version we were sure about (v5) scored six points *lower* than the one before it. Measuring before believing is the habit this project taught us.
+
+Full list, with what we tried and what we learned: [`docs/failures.md`](docs/failures.md).
 
 ## Final result
 
-_(To complete at the end: what works today, a screenshot, the final evaluation score.)_
+What works today, end to end:
+
+- **A plan you can shop.** Budget, people, days, meals, diet, allergies, dislikes and what is already at home go in; a meal plan with recipes comes back, together with a shopping list in whole packages, a total, a verdict against the budget, and what the same basket would cost in the other supermarket.
+- **Two real supermarkets.** Mercadona (Madrid online zone) and Dia (national online shop), 86 ingredients, prices from a dated open-data snapshot (2026-09-21), not invented by the model.
+- **An honest no.** An impossible budget is refused with the arithmetic that justifies it instead of a plan nobody can afford. A user insisting that 5 EUR is enough for three people for a week is still refused.
+- **Swap one meal** without regenerating the week: the slot and the servings are forced by the code, the new meal is validated like a fresh plan, and the whole basket is priced again.
+- **English and Spanish**, recipes included.
+- **The prompt is measured, not felt.** Six versions scored on the same rubric and the same 10 cases; the shipped one (v4) and the last one (v6) both score 58/60. Two ablations (v3 with one rule removed) measure what a single rule is worth. The full history, including the version that scored *lower* than the one before it, is in [`docs/prompt-log.md`](docs/prompt-log.md).
+- **95 automated tests** (`python3 -m pytest`, no API key needed: the model is faked) and they run on every pull request.
+
+How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md).
 
 ## Limitations
 

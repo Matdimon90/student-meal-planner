@@ -13,6 +13,11 @@ Each file has two parts separated by the line `---USER---`: the system prompt, t
 | `x1_model_total.md` | Experiment: v4 plus "add up the packages yourself and write the total" | Tested whether the pricing code could be dropped. It cannot: see the log, the model writes a number just under the budget instead of adding |
 | `v5_varied_menu.md` | Written by us from the v4 results: gram equivalents for produce, a vegetable per meal, reuse target, "do not copy the examples" | Fruit in pieces, menus that copy the examples, leftovers. Scored lower than v4 (see the log) |
 | `v6_diverse_examples.md` | Written by us from the v5 result: v4 rules byte for byte, but a second feasible example on a different base (pasta and lentils, not rice) | Menus that copy v4's single rice-heavy example, using the lever that worked (examples) instead of the one that backfired (more rules). Not yet evaluated (see the log) |
+| `x2_no_reuse_rule.md` | Ablation: v3 with rule 4 (whole packages, reuse ingredients) removed and nothing else | Measures what rule 4 was doing. We expect the rubric score to hold and the plan quality (reuse ratio, EUR per serving, leftovers) to fall |
+| `x3_no_honesty_rule.md` | Ablation: v3 with rule 8 (refuse an impossible budget honestly) removed and nothing else | Measures our only prompt-side defence against sycophancy. We expect `impossible_budget` and `sycophancy` to produce confident over-budget plans, as v2 did |
+| `swap_meal.md` | Not a version of the planner prompt: the single-meal replacement behind `/api/swap`. Catalogue-only ingredients and the `<user_notes>` role separation kept, narrowed to one recipe, with the plan's other meals given as context to reuse | A swap that breaks the rest of the plan: the same dish back again, a new package opened for one meal, the wrong slot or servings |
+
+Every file except `swap_meal.md` is a version of the same task (plan a whole week), so the versions can be compared with one another; the swap prompt does a different job and is not scored on the rubric. main
 
 Measured results for each version are in [`docs/prompt-log.md`](../docs/prompt-log.md). Expectations above are hypotheses; the log says what actually happened.
 

@@ -187,6 +187,35 @@ Average absolute error: 17.00 EUR on 9 priced plans.
 
 Other ideas we did not have time to run: a heavy persona ("you are a Michelin chef"), removing rule 4 to see what it was doing, letting the API enforce the JSON format (`output_config` with a JSON schema) instead of asking for it in the prompt.
 
-## What would happen if we removed...
+## What would happen if we removed... (ablations x2 and x3)
 
-_The teacher may ask this. Pick two rules from v3, remove each one, run the evaluation, write the result here._
+Every version so far *added* something. That tells us what helps, not what each rule is actually doing: a rule can be dead weight and we would never know. So we take v3 (52/60, the last version whose rules are still the ones shipped in v4) and remove exactly one rule at a time, changing nothing else. Two rules, chosen because we can predict a *different* kind of damage for each:
+
+| Variant | Rule removed from v3 | Why this rule |
+| --- | --- | --- |
+| [`x2_no_reuse_rule.md`](../prompts/x2_no_reuse_rule.md) | 4 — "the shop sells whole packages only... reuse the same ingredients across several recipes" | The rule the whole project is built on: our code prices whole packages, so this is the only place the prompt is told that 100 g of rice costs a 1 kg bag. If removing it changes nothing, we have been writing it for nothing. |
+| [`x3_no_honesty_rule.md`](../prompts/x3_no_honesty_rule.md) | 8 — "if no reasonable plan fits the budget, do not pretend. Set feasible to false..." | Our only prompt-side defence against sycophancy. The code can price a plan but cannot invent a refusal, so this rule is what stands between a student and a confident 5 EUR plan for a week. |
+
+In both files the remaining rules are renumbered and nothing else changes, so the diff against v3 is one line (plus numbering).
+
+**What we predict, written before the run.**
+
+- **x2 (no reuse rule).** The rubric score should barely move: `json`, `real`, `safe` and `complete` do not depend on this rule. The damage should be in the numbers the rubric does *not* score — reuse ratio down from 1.88, EUR per serving up from 1.89, leftovers above 56% — and then, indirectly, in `budget`, because a plan that opens a package per recipe costs more. If that is what happens, it proves something we have been claiming since v3 without evidence: rule 4 buys plan *quality*, not plan *validity*.
+- **x3 (no honesty rule).** The score should collapse on exactly two cases and stay identical everywhere else. `impossible_budget` (15 EUR, 4 people, 7 days) and `sycophancy` (5 EUR, 3 people, 7 days, the user insists) should come back as full plans priced far above budget, the v2 behaviour: v2 had no honesty rule and produced a 127.54 EUR plan for a 15 EUR budget. Expected loss: about 12 points out of 60, all of it on two cases. The other eight should be untouched, which is the point — one rule, one failure mode.
+
+**Results** (2026-09-28, claude-haiku-4-5, one run of the 10 cases each).
+
+| Variant | json | real | safe | complete | budget | final | Total | Model calls | Reuse ratio | EUR per serving | Leftovers |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| v3 (baseline) | 10/10 | 9/10 | 10/10 | 9/10 | 6/10 | 8/10 | 52/60 | 14 | 1.88 | 1.89 | 56% |
+| x2 — no reuse rule | 10/10 | 10/10 | 10/10 | 9/10 | 7/10 | 9/10 | 55/60 | 13 | 1.81 | 1.81 | 57% |
+| x3 — no honesty rule | 10/10 | 9/10 | 10/10 | 9/10 | 5/10 | 10/10 | 53/60 | 15 | 1.97 | 1.82 | 59% |
+
+Quality columns are averages over the plans that could be priced (6 for v3, 7 for x2, 8 for x3), so they are indicative, not exact comparisons.
+
+**What happened: both predictions were wrong, and that is the useful part.**
+
+- **x2 (no reuse rule): almost nothing changed.** The score went up by 3 and the reuse ratio barely moved (1.88 → 1.81); plans were not more expensive. Two reasons. First, the idea of rule 4 survives elsewhere in the prompt: rule 6 still says "estimate the cost of the *whole packages* you would need", and the catalogue shows every package size and price. The rule we removed was partly a duplicate. Second, one run of 10 cases is noisy: re-running the unchanged v4 prompt on 2026-09-24 moved `tight_budget` from 6/6 to 4/6. A difference of 2 or 3 points out of 60 is within that noise. So we cannot show that rule 4 matters on its own; we can only say it is not the only thing that pushes the model towards whole packages.
+- **x3 (no honesty rule): the first answer broke, the final answer did not.** Without rule 8 the first reply got worse exactly where predicted: the budget column fell to 5/10 and `impossible_budget` came back as a plan instead of a refusal. But the final status stayed correct on all 10 cases, and no over-budget plan reached the user. The reason is in our own code: when a plan is over budget, the retry message in `src/planner.py` (`_cheaper_message`) says "If it cannot be done, set "feasible" to false and explain honestly." The honesty instruction exists in two places, so removing it from the prompt only moved the refusal one call later (15 model calls instead of 14).
+
+**What we learned.** Removing a rule and seeing no change is still a result: either another rule already says the same thing (x2), or another layer of the system catches the failure (x3). The second one is the design we chose from the start — the prompt asks, the code checks — and this is the first time we measured it working. What rule 8 buys is a first answer that is already honest, and one fewer model call. To tell a real 3-point effect from noise we would need to run each variant several times; with one run each, we only trust large differences.

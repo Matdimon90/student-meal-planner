@@ -38,6 +38,10 @@ This is a single-purpose LLM pipeline, not an agent. The model has no tools and 
 
 The model gets at most 3 calls per request (1 answer, 1 repair, 1 cheaper retry). If the plan is still invalid we show nothing rather than something wrong. If it is still over budget we show it and say so.
 
+### Swapping one meal
+
+Replacing a single meal follows the same rule with a smaller model call. `swap_meal()` sends one request (`prompts/swap_meal.md`) that asks for one recipe only, and shows the other meals of the plan so that the new dish reuses packages they already open. Everything that must be exact stays in the code: the day, the meal slot and the number of servings are overwritten with the values we asked for instead of being read from the reply, `validate_plan` checks the new meal against the catalogue and the diet exactly as it checks a fresh plan, and the whole plan — the untouched meals included — is priced again from scratch, because one different recipe changes which packages the basket needs. The result has the same shape as a normal plan, so the page renders it the same way and the budget verdict comes from our arithmetic, never from the model.
+
 ## LLM failure modes in this project
 
 | Failure mode | How it shows up here | Our defence |

@@ -134,6 +134,20 @@ The one remaining failure is the same as in v2 and v3: `big_week` writes `banana
 
 **What we learned.** More rules is not more control. Each rule we add competes with the others for the model's attention, and the score tells us which one loses. The right fix for the two things v5 tried to solve is not in the prompt: fruit units belong in the validator (accept pieces for produce and convert), and variety should be a user choice ("cheapest" vs "varied") rather than a rule the model has to balance against the budget. v4 stays the version the app ships with.
 
+## v6 — diverse examples (written by us from the v5 result)
+
+**Problem.** v4 ships well (58/60) but its menus copy its single feasible example: rice-heavy, "Egg fried rice" in 2 of 8 plans. v5 tried to fix this with rules ("no same base two days in a row", "a vegetable in every meal") and scored *lower* (52/60), because those rules fight rule 4 (reuse packages) and the model obeys the newest one.
+
+**Hypothesis.** The lever that worked in v4 was the example, not the rule ("the example of a cheap plan did what the rule could not"). So attack variety through the examples, not through a new rule. v6 keeps the v4 rules **byte for byte** and only changes `<examples>`: it adds a second feasible example built on a different base (pasta and lentils instead of rice), reusing packages the same way. The model now has two good templates to imitate instead of one.
+
+**What we changed, and what we deliberately did not.** Only the examples block changed, so any difference from v4 is attributable to the examples alone. We did **not** re-add v5's "do not copy the examples / no same base two days" rule: v5 showed it only renamed recipes and cost budget. We bet that a second template broadens the menu on its own.
+
+**What we expected.** Reuse ratio and budget hold at the v4 level (they are governed by the unchanged rules), while the menu widens: fewer rice-only plans, the rice and pasta bases roughly balanced, and "Egg fried rice" no longer in a quarter of the plans.
+
+**What happened.** _To run: `python3 scripts/evaluate_prompt.py v6` (needs an API key), then paste the row into the Scores table above and quote one plan. The question to answer: did diversifying the example widen the menu without the budget/reuse regression that adding a rule caused in v5?_
+
+**Risk to watch.** The copy problem may simply shift, not disappear: plans could become pasta-and-lentil-heavy instead of rice-heavy. If so, the lesson is that few-shot examples set the menu whatever we do, and real variety needs a user choice ("cheapest" vs "varied") rather than more examples — the same conclusion v5 pointed to from the other direction.
+
 ## Model comparison (speed vs quality)
 
 The first real runs with `claude-sonnet-5` took a long time per plan (fill in: how long). We switched the default to `claude-haiku-4-5-20251001`. Run the evaluation with both (`PLANNER_MODEL=... python3 scripts/evaluate_prompt.py v4`) and record score, seconds per call (in the `trace` of the outputs file) and plan quality here.

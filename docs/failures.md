@@ -73,4 +73,20 @@ approving one. Always start a new branch from an up-to-date `main`.
 
 ## _Add yours_
 
+### Commits pushed straight to main
+- **What happened.** Two README edits reached `main` without a pull request. On 21
+September, `README.md update` (Oscar) was committed on his local `main` and pushed. On 23
+September, `Update README.md` (Tom) was made in GitHub's web editor and changed the title
+to "Student Meal Planner for student ". The wrong title stayed until pull request #36
+fixed it.
+- **Why.** Nothing stopped it: `main` was not protected. In the browser, GitHub's default
+choice is "Commit directly to the main branch", with a ready-made message like "Update
+README.md". Both messages say which file changed, not what changed, and nobody reviewed
+the edits.
+- **Fix.** The title was fixed in pull request #36. `main` is now protected: every change
+needs a pull request and one approval.
+- **Learned.** A written rule is not enough; the tool has to block the wrong path. In the
+web editor, choose "Create a new branch for this commit and start a pull request", and
+write a message that says what changed.
+
 _Merge conflicts, prompts that failed, Vercel problems... Keep the four questions._

@@ -343,6 +343,49 @@
   .hood { margin-top:16px; color:var(--muted); font-size:14px; } .hood summary { cursor:pointer; font-weight:600; } .hood code { font-family:var(--mono); font-size:12px; }
   footer { max-width:720px; margin:0 auto; padding:18px 16px 110px; color:var(--muted); font-size:12.5px; border-top:1px solid var(--line); }
 
+
+  /* ---------- computer screens (phones and tablets are untouched) ---------- */
+  @media screen and (min-width:1024px) {
+    .top { max-width:1232px; padding:22px 16px 10px; }
+    footer { max-width:1200px; padding-bottom:40px; }
+
+    /* Landing: text on the left, the dishes on the right */
+    .welcome { max-width:1232px; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); column-gap:64px; padding-top:48px; }
+    .welcome > * { grid-column:1; }
+    .welcome .collage { grid-column:2; grid-row:1 / span 4; align-self:center; grid-template-columns:repeat(3,1fr); gap:12px; margin:0; }
+    .welcome .collage img { border-radius:20px; }
+    .welcome h1 { font-size:76px; }
+    .welcome .how { grid-column:1 / -1; margin-top:56px; gap:32px; }
+
+    /* Questions: the button follows the content instead of sitting at the bottom of a tall window */
+    .wizard { padding-bottom:8px; }
+    .bottom { position:sticky; padding-top:20px; }
+
+    /* Tabs at the top, like a desktop app */
+    .nav { top:18px; bottom:auto; box-shadow:0 6px 20px rgba(0,0,0,.08); }
+    .nav button { display:flex; align-items:center; gap:8px; font-size:14px; padding:9px 18px; min-width:0; }
+    .nav button svg { width:18px; height:18px; }
+    .results { max-width:1232px; padding:18px 16px 64px; }
+
+    /* Plan: the week in a wide column, the budget summary beside it */
+    .hero { padding:34px 40px 30px; margin-bottom:24px; }
+    .pgrid { display:grid; grid-template-columns:minmax(0,1fr) 360px; column-gap:40px; align-items:start; }
+    .pside { grid-column:2; grid-row:1; }
+    .pmain { grid-column:1; grid-row:1; }
+    .pmain > .dayhead:first-child { margin-top:2px; }
+    .pside .costrow { grid-template-columns:1fr; }
+
+    /* Other tabs and verdicts: a comfortable reading width */
+    .results > :not(.hero):not(.pgrid):not(.shopping) { max-width:760px; margin-left:auto; margin-right:auto; }
+
+    /* Shopping list: aisles in two columns */
+    .shopping { max-width:1040px; margin:0 auto; padding:28px 32px; }
+    .aisles { columns:2; column-gap:48px; }
+    .agroup { break-inside:avoid; }
+  }
+  /* The summary follows the scroll only when it fits in the window (the "what you can change" card makes it taller) */
+  @media screen and (min-width:1024px) and (min-height:640px) { .pside:not(:has(.change)) { position:sticky; top:88px; } }
+  @media screen and (min-width:1024px) and (min-height:940px) { .pside { position:sticky; top:88px; } }
   @media print {
     @page { size:A4; margin:16mm; }
     body { background:#fff; color:#000; }
@@ -922,8 +965,9 @@ function planTabHtml(r) {
   if (r.status === "invalid_plan") return `<div class="verdict"><div class="caps">⚠ ${esc(t("invalid"))}</div><p style="margin:10px 0 14px">${esc(t("invalidText"))}</p><button type="button" class="ghost" data-go="regen">${esc(t("retry"))}</button></div>${hoodHtml(r)}`;
   if (r.status === "infeasible") return notRealisticHtml(r) + hoodHtml(r);
   const a = lastAnalysis;
-  let html = heroHtml(r) + costHtml(r) + targetsHtml(r);
+  let html = heroHtml(r) + `<div class="pgrid"><div class="pside">` + costHtml(r) + targetsHtml(r);
   if (!r.budget.within_budget) html += `<div style="margin-top:14px">${changesHtml(r, a)}</div>`;
+  html += `</div><div class="pmain">`;
   for (let d = 1; d <= a.D; d++) {
     const ms = r.meals.filter(m => m.day === d); if (!ms.length) continue;
     html += `<div class="dayhead"><h3>${esc(weekday(d, "long"))}</h3><span>${esc(L("dayN", d))} · ${money(ms.reduce((x, m) => x + (m.cost_cents || 0), 0))}</span></div><div class="meals">${ms.map(m => mealCard(m, a)).join("")}</div>`;
@@ -931,7 +975,7 @@ function planTabHtml(r) {
   html += `<div style="margin-top:22px">${comparisonHtml(r)}${shelfHtml(r, a)}
     <div class="card"><h2>${esc(t("mapTitle"))}</h2><p class="sub">${esc(t("mapSub"))}</p><div class="map" id="reuseMap"></div>
       <div class="legend"><span><i class="knot"></i>${esc(t("legendKnot"))}</span><span><i class="bead"></i>${esc(t("legendBead"))}</span><span><i class="dash"></i>${esc(t("legendDash"))}</span></div></div></div>`;
-  return html + hoodHtml(r);
+  return html + hoodHtml(r) + `</div></div>`;
 }
 function changesHtml(r, a) {
   const items = [];
@@ -995,14 +1039,14 @@ function listTabHtml(r) {
   let rows = "";
   for (const cat of AISLES) {
     const lines = buy.filter(l => l.category === cat); if (!lines.length) continue;
-    rows += `<div class="aisle">${esc(t(cat))}</div>` + lines.map(l => `<label class="li ${done.has(l.ingredient_id) ? "done" : ""}"><input type="checkbox" data-check="${l.ingredient_id}" ${done.has(l.ingredient_id) ? "checked" : ""}>
+    rows += `<div class="agroup"><div class="aisle">${esc(t(cat))}</div>` + lines.map(l => `<label class="li ${done.has(l.ingredient_id) ? "done" : ""}"><input type="checkbox" data-check="${l.ingredient_id}" ${done.has(l.ingredient_id) ? "checked" : ""}>
       <span><b>${EMOJI[l.ingredient_id] || ""} ${esc(shortName(l.name))}</b><small>${esc(l.product_name || l.name)}</small></span>
-      <span class="qty"><strong>${money(l.cost_cents)}</strong>${esc(pack(l))}${l.leftover > 0 ? `<em>${esc(L("left", amount(l.leftover, l.base_unit)))}</em>` : ""}</span></label>`).join("");
+      <span class="qty"><strong>${money(l.cost_cents)}</strong>${esc(pack(l))}${l.leftover > 0 ? `<em>${esc(L("left", amount(l.leftover, l.base_unit)))}</em>` : ""}</span></label>`).join("") + `</div>`;
   }
-  if (home.length) rows += `<div class="aisle">${esc(t("atHome"))}</div>` + home.map(l => `<div class="li home"><span></span><span><b>${EMOJI[l.ingredient_id] || ""} ${esc(shortName(l.name))}</b></span><span class="qty">${amount(l.needed, l.base_unit)}</span></div>`).join("");
+  if (home.length) rows += `<div class="agroup"><div class="aisle">${esc(t("atHome"))}</div>` + home.map(l => `<div class="li home"><span></span><span><b>${EMOJI[l.ingredient_id] || ""} ${esc(shortName(l.name))}</b></span><span class="qty">${amount(l.needed, l.base_unit)}</span></div>`).join("") + `</div>`;
   return `<section class="card shopping"><div class="rhead"><div><h2>${esc(t("listTitle"))}</h2><p class="sub" style="margin:0">${esc(L("listSub", r.prices.name || "", buy.length, packages))}</p></div>
       <div class="actions"><button type="button" class="btn" id="copy">⧉ ${esc(t("copy"))}</button><button type="button" class="btn" id="download">⭳ ${esc(t("download"))}</button><button type="button" class="btn" onclick="window.print()">⎙ ${esc(t("print"))}</button></div></div>
-    <p class="muted" style="font-size:13.5px;margin:12px 0 0">${esc(t("tickHint"))}</p>${rows}
+    <p class="muted" style="font-size:13.5px;margin:12px 0 0">${esc(t("tickHint"))}</p><div class="aisles">${rows}</div>
     <div class="totals"><b>${esc(t("subtotal"))}</b><b>${money(b.total_cents)}</b><span class="m">${esc(t("budgetL"))}</span><span class="m">${money(b.budget_cents)}</span>
       <span class="${b.within_budget ? "g" : "r"}">${esc(t(b.within_budget ? "remaining" : "overL"))}</span><span class="${b.within_budget ? "g" : "r"}">${money(Math.abs(b.difference_cents))}</span><span class="sig">${esc(t("recipesByAi"))}</span></div></section>`;
 }

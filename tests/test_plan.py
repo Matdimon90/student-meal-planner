@@ -165,3 +165,53 @@ def test_supermarket_must_exist():
     with pytest.raises(RequestError, match="Supermarket"):
         validate_request(PlanRequest(budget_eur=20, people=2, days=1, supermarket="lidl"))
     validate_request(PlanRequest(budget_eur=20, people=2, days=1, supermarket="dia"))
+
+
+# --- kitchen equipment --------------------------------------------------------
+
+def baked_meal(steps=("Preheat the oven to 200 C.", "Bake for 20 minutes.")):
+    return {**make_meal(), "recipe_name": "Baked rice", "steps": list(steps)}
+
+
+def test_oven_recipe_is_reported_when_the_user_has_no_oven():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob", "microwave"}))
+    problems = problems_for(make_reply([baked_meal()]), request)
+    assert any(p.startswith("MISSING_EQUIPMENT") and "oven" in p for p in problems)
+
+
+def test_spanish_steps_are_checked_too():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = baked_meal(["Calienta el horno.", "Calienta las sobras en el microondas."])
+    problems = [p for p in problems_for(make_reply([meal]), request) if p.startswith("MISSING_EQUIPMENT")]
+    assert len(problems) == 2  # oven and microwave
+
+
+def test_oven_recipe_is_fine_when_the_user_has_an_oven_or_did_not_say():
+    with_oven = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob", "oven"}))
+    assert problems_for(make_reply([baked_meal()]), with_oven) == []
+    assert problems_for(make_reply([baked_meal()])) == []  # no equipment given: not checked
+
+
+def test_ordinary_words_are_not_mistaken_for_an_appliance():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": ["Fry the onion in a pan.", "Boil the rice with a bay leaf.", "Serve with lemon."]}
+    assert problems_for(make_reply([meal]), request) == []
+
+@pytest.mark.parametrize("step", [
+    "Cook in a frying pan, no oven needed.",
+    "Pizza de sartén sin horno.",
+    "Reheat in the microwave or in a pan.",
+    "Recalienta en el microondas o en un cazo.",
+    "Simmer in a Dutch oven for 20 minutes.",
+    "Serve with baked beans.",
+])
+def test_an_appliance_named_but_not_needed_is_not_a_problem(step):
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": [step]}
+    assert problems_for(make_reply([meal]), request) == []
+
+
+def test_the_problem_message_reads_well():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    problems = problems_for(make_reply([baked_meal()]), request)
+    assert any("needs an oven" in p for p in problems)

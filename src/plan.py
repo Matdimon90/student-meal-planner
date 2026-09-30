@@ -6,6 +6,7 @@ it: invented ingredients, forbidden ingredients, wrong units, missing meals.
 """
 
 import json
+import re
 from dataclasses import dataclass, field
 
 from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, supermarkets
@@ -29,6 +30,23 @@ PORTIONS = {"auto": None, "light": (400, 600), "balanced": (600, 800), "hearty":
 # Minimum grams of protein per serving for lunch and dinner.
 PROTEIN_TARGETS = {"auto": 0, "high": 30, "extra": 40, "max": 50}
 EQUIPMENT = ("hob", "oven", "microwave", "air_fryer", "slow_cooker")
+# Words that show a recipe needs an appliance, in English and Spanish. The hob
+# is not checked: "pan" or "boil" are too common to tell it apart reliably.
+EQUIPMENT_WORDS = {
+    "oven": r"\b(oven|bake[ds]?|baking|horno|hornea\w*|gratin\w*)\b",
+    "microwave": r"\b(microwave\w*|microondas)\b",
+    "air_fryer": r"\b(air[- ]?fryer|airfryer|freidora de aire)\b",
+    "slow_cooker": r"\b(slow[- ]?cooker|olla lenta|crock[- ]?pot)\b",
+}
+_APPLIANCE = r"(oven|horno|microwave|microondas|air[- ]?fryer|airfryer|freidora de aire|slow[- ]?cooker|olla lenta)"
+# Phrases that name an appliance without needing it: "no oven needed", "sin horno",
+# "heat in the microwave or in a pan", "no-bake", "Dutch oven", "baked beans".
+NOT_NEEDED = [
+    r"\b(without|no|not|never|sin|ni)\s+(an?\s+|the\s+|el\s+|la\s+)?" + _APPLIANCE,
+    r"\b(in\s+|en\s+)?(an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?" + _APPLIANCE + r"\s+(or|o)\b",
+    r"\b(or|o)\s+(in\s+|en\s+)?(an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?" + _APPLIANCE,
+    r"\bno[- ]bake\b", r"\bdutch oven\b", r"\bbaked beans\b",
+]
 
 
 class RequestError(ValueError):
@@ -115,6 +133,19 @@ def validate_request(request: PlanRequest) -> None:
         raise RequestError(f"Equipment must be chosen from {list(EQUIPMENT)}")
 
 
+def equipment_problems(meal, equipment: frozenset) -> list:
+    """Appliances a recipe mentions that the user said they do not have."""
+    if not equipment:  # the user did not say: a normal kitchen, nothing to check
+        return []
+    text = " ".join((meal.recipe_name,) + tuple(meal.steps)).lower()
+    for pattern in NOT_NEEDED:
+        text = re.sub(pattern, " ", text)
+    return [
+        appliance for appliance, pattern in EQUIPMENT_WORDS.items()
+        if appliance not in equipment and re.search(pattern, text)
+    ]
+
+
 def extract_json(text: str) -> dict:
     """Find the JSON object in the model's reply, even if it added text around it."""
     start, end = text.find("{"), text.rfind("}")
@@ -184,6 +215,8 @@ def validate_plan(plan: MealPlan, request: PlanRequest, full_catalogue: dict, al
             problems.append(f"NO_INGREDIENTS: {where} has no ingredients")
         if meal.servings != request.people:
             problems.append(f"WRONG_SERVINGS: {where} serves {meal.servings}, expected {request.people}")
+        for appliance in equipment_problems(meal, request.equipment):
+            problems.append(f"MISSING_EQUIPMENT: {where} needs {'an' if appliance[0] in 'aeiou' else 'a'} {appliance.replace('_', ' ')}, which the user does not have")
 
         for need in meal.ingredients:
             if need.ingredient_id not in full_catalogue:

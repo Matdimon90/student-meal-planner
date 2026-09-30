@@ -163,6 +163,26 @@ def build_shopping_list(
     return lines
 
 
+def used_cost_cents(
+    needs: list[IngredientNeed],
+    catalogue: dict[str, Product],
+    already_have: frozenset[str] = frozenset(),
+) -> int:
+    """What the quantities a recipe uses are worth: its share of each package.
+
+    Only used to show a price next to each meal. The user still pays for
+    whole packages: the shopping total comes from build_shopping_list.
+    """
+    total = 0.0
+    for need in needs:
+        if need.ingredient_id in already_have:
+            continue
+        product = catalogue[need.ingredient_id]
+        package_size, _ = to_base(product.package_size, product.package_unit)
+        total += product.package_price_cents * product.to_recipe_base(need.quantity, need.unit) / package_size
+    return round(total)
+
+
 def total_cost_cents(lines: list[ShoppingLine]) -> int:
     return sum(line.cost_cents for line in lines)
 

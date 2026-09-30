@@ -159,3 +159,11 @@ def test_every_meal_carries_calories_and_protein_counted_by_code():
     result = generate_plan(request(), FakeModel(reply(CHEAP)))
     # 200 g rice (355 kcal, 7 g protein per 100 g) + 400 g lentils (100 kcal, 8 g) for 2 servings
     assert result["meals"][0]["nutrition"] == {"kcal": round((710 + 400) / 2), "protein_g": round((14 + 32) / 2)}
+
+
+def test_meal_prices_add_up_to_the_used_part_of_the_basket_not_more():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))
+    # 200 g of a 1.15 euro kilo of rice + 400 g of a 0.90 euro 570 g jar of lentils
+    meal = result["meals"][0]
+    assert meal["cost_cents"] <= result["budget"]["total_cents"]
+    assert meal["cost_cents"] == round(115 * 0.2 + 90 * 400 / 570)

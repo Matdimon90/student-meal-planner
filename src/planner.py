@@ -19,7 +19,7 @@ from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supe
 from src.nutrition import meal_nutrition
 from src.plan import Meal, MealPlan, PlanFormatError, PlanRequest, RequestError, parse_plan, validate_plan, validate_request
 from src.prompting import render_prompt, render_swap_prompt
-from src.shopping import IngredientNeed, build_shopping_list, check_budget, format_euros
+from src.shopping import IngredientNeed, build_shopping_list, check_budget, format_euros, used_cost_cents
 
 DEFAULT_PROMPT_VERSION = "v4"
 SWAP_PROMPT_VERSION = "swap"
@@ -265,6 +265,8 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
                 "steps": list(meal.steps),
                 # Per serving, added up by code from data/nutrition.csv (estimates).
                 "nutrition": meal_nutrition(meal.ingredients, meal.servings, catalogue),
+                # Share of the packages this meal uses. The total is still whole packages.
+                "cost_cents": used_cost_cents(meal.ingredients, catalogue, request.already_have),
             }
             for meal in sorted(plan.meals, key=lambda m: (m.day, ("breakfast", "lunch", "dinner").index(m.meal)))
         ]

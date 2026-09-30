@@ -62,6 +62,11 @@ def problems_for(reply, request=REQUEST):
         {"allergies": frozenset({"kryptonite"})},
         {"language": "fr"},
         {"notes": "x" * 301},
+        {"styles": ("spicy",)},
+        {"styles": ("healthy", "quick", "comfort", "world")},
+        {"portion": "huge"},
+        {"protein": "100g"},
+        {"equipment": frozenset({"barbecue"})},
     ],
 )
 def test_invalid_requests_are_rejected(changes):
@@ -72,6 +77,11 @@ def test_invalid_requests_are_rejected(changes):
 
 def test_valid_request_passes():
     validate_request(PlanRequest(budget_eur=35.5, people=3, days=7, meals=("breakfast", "lunch", "dinner")))
+
+
+def test_request_with_every_preference_passes():
+    validate_request(PlanRequest(budget_eur=35, people=2, days=5, styles=("healthy", "quick", "batch"),
+                                 portion="balanced", protein="high", equipment=frozenset({"hob", "microwave"})))
 
 
 def test_slots_lists_every_day_and_meal_in_order():
@@ -155,3 +165,68 @@ def test_supermarket_must_exist():
     with pytest.raises(RequestError, match="Supermarket"):
         validate_request(PlanRequest(budget_eur=20, people=2, days=1, supermarket="lidl"))
     validate_request(PlanRequest(budget_eur=20, people=2, days=1, supermarket="dia"))
+
+
+# --- kitchen equipment --------------------------------------------------------
+
+def baked_meal(steps=("Preheat the oven to 200 C.", "Bake for 20 minutes.")):
+    return {**make_meal(), "recipe_name": "Baked rice", "steps": list(steps)}
+
+
+def test_oven_recipe_is_reported_when_the_user_has_no_oven():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob", "microwave"}))
+    problems = problems_for(make_reply([baked_meal()]), request)
+    assert any(p.startswith("MISSING_EQUIPMENT") and "oven" in p for p in problems)
+
+
+def test_spanish_steps_are_checked_too():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = baked_meal(["Calienta el horno.", "Calienta las sobras en el microondas."])
+    problems = [p for p in problems_for(make_reply([meal]), request) if p.startswith("MISSING_EQUIPMENT")]
+    assert len(problems) == 2  # oven and microwave
+
+
+def test_oven_recipe_is_fine_when_the_user_has_an_oven_or_did_not_say():
+    with_oven = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob", "oven"}))
+    assert problems_for(make_reply([baked_meal()]), with_oven) == []
+    assert problems_for(make_reply([baked_meal()])) == []  # no equipment given: not checked
+
+
+def test_ordinary_words_are_not_mistaken_for_an_appliance():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": ["Fry the onion in a pan.", "Boil the rice with a bay leaf.", "Serve with lemon."]}
+    assert problems_for(make_reply([meal]), request) == []
+
+@pytest.mark.parametrize("step", [
+    "Cook in a frying pan, no oven needed.",
+    "Pizza de sartén sin horno.",
+    "Reheat in the microwave or in a pan.",
+    "Recalienta en el microondas o en un cazo.",
+    "Simmer in a Dutch oven for 20 minutes.",
+    "Serve with baked beans.",
+])
+def test_an_appliance_named_but_not_needed_is_not_a_problem(step):
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": [step]}
+    assert problems_for(make_reply([meal]), request) == []
+
+
+def test_the_problem_message_reads_well():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    problems = problems_for(make_reply([baked_meal()]), request)
+    assert any("needs an oven" in p for p in problems)
+
+
+# --- minutes and tags (prompt v7) ----------------------------------------------
+
+def test_minutes_and_tags_are_optional_and_cleaned():
+    meal = {**make_meal(), "minutes": "35", "tags": ["Quick", "quick", "spicy", "healthy", "world", "comfort"]}
+    parsed = parse_plan(make_reply([meal])).meals[0]
+    assert parsed.minutes == 35
+    assert parsed.tags == ("quick", "healthy", "world")  # known, unique, at most three
+    assert parse_plan(make_reply([make_meal()])).meals[0].minutes == 0  # older prompts: no minutes
+
+
+@pytest.mark.parametrize("value", [None, "soon", -5, 0, 9999, float("inf")])
+def test_nonsense_minutes_become_zero(value):
+    assert parse_plan(make_reply([{**make_meal(), "minutes": value}])).meals[0].minutes == 0

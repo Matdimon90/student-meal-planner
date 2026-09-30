@@ -41,3 +41,11 @@ Code was written with Claude as a coding assistant, in small slices. Each slice 
 ## 9. Pieces or grams: a problem we moved from the prompt to the code
 
 Three prompt versions could not stop the model writing "banana: 2 ud" when our catalogue sells bananas by weight. The evaluation log showed the same failure in v2, v3 and v4, and v5 only fixed it by listing gram equivalents in the prompt, at the cost of everything else. So we fixed it where it belongs: `data/staples.csv` now has an average `piece_grams` for produce people count rather than weigh, and the code accepts both "2 ud" and "360 g" for those products. The prompt still says grams; the validator no longer punishes a natural answer.
+
+## 10. A step-by-step form, and the model aims while the code counts
+
+The first page was one long form. We replaced it with one question per screen (shop, people, days, budget, styles, diet and allergies, plate, protein, dislikes, what is at home, kitchen), like the meal-planning apps students already use, because a long form hides the questions that matter. The new answers go to the model through prompt v7. What can be checked is checked in code: calories and protein are counted from `data/nutrition.csv` and the model gets one retry when meals miss the target, recipes that need an appliance the user does not have are rejected, and the "protein" label is set from the counted grams. When a tight budget and a protein target cannot both be met, the budget wins and the page says how many plates reach the target.
+
+## 11. Dish photos from a library, not generated
+
+Each meal card shows a photo, like the apps we took the idea from. Generating one image per recipe would cost money and seconds on every plan, and could show a dish that looks nothing like what the student will cook. We chose 48 free photos from Unsplash (credits in `public/img/dishes/CREDITS.md`) and let the code pick one from the recipe name and ingredients (`src/photos.py`). The photo shows the kind of dish, not the exact recipe, and the footer says so.

@@ -159,3 +159,11 @@ def test_pieces_are_still_rejected_for_things_not_sold_by_the_piece():
     assert not CATALOGUE["rice"].accepts_unit("ud")
     with pytest.raises(ShoppingError, match="sold in kg"):
         build_shopping_list([IngredientNeed("rice", 2, "ud")], CATALOGUE)
+
+
+def test_a_meal_is_priced_by_the_share_of_packages_it_uses():
+    from src.shopping import used_cost_cents
+    catalogue = {"rice": Product("rice", "Rice", "Arroz", 115, 1.0, "kg"), "oil": Product("oil", "Oil", "Aceite", 400, 1.0, "l")}
+    needs = [IngredientNeed("rice", 200, "g"), IngredientNeed("oil", 10, "ml")]
+    assert used_cost_cents(needs, catalogue) == round(115 * 0.2 + 400 * 0.01)
+    assert used_cost_cents(needs, catalogue, already_have=frozenset({"oil"})) == 23

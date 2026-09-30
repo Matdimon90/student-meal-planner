@@ -6,6 +6,7 @@ it: invented ingredients, forbidden ingredients, wrong units, missing meals.
 """
 
 import json
+import re
 from dataclasses import dataclass, field
 
 from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, supermarkets
@@ -19,6 +20,36 @@ MAX_BUDGET_EUR = 1000
 MAX_NOTES_CHARS = 300
 # More than this per person in one recipe is almost certainly a model mistake.
 MAX_PER_SERVING = {"g": 1000, "ml": 1000, "ud": 6}
+
+# Preferences asked by the step-by-step form. They guide the model; only the
+# equipment is also checked by code (see equipment_problems).
+STYLES = ("healthy", "quick", "comfort", "world", "mediterranean", "batch")
+MAX_STYLES = 3
+# Calories per serving for lunch and dinner. "auto" lets the model decide.
+PORTIONS = {"auto": None, "light": (400, 600), "balanced": (600, 800), "hearty": (800, None)}  # None: no upper limit
+# Minimum grams of protein per serving for lunch and dinner.
+PROTEIN_TARGETS = {"auto": 0, "high": 30, "extra": 40, "max": 50}
+EQUIPMENT = ("hob", "oven", "microwave", "air_fryer", "slow_cooker")
+# Labels the model may put on a meal (prompt v7). Anything else is dropped.
+MEAL_TAGS = ("healthy", "quick", "protein", "comfort", "world", "mediterranean", "batch")
+MAX_MINUTES = 240
+# Words that show a recipe needs an appliance, in English and Spanish. The hob
+# is not checked: "pan" or "boil" are too common to tell it apart reliably.
+EQUIPMENT_WORDS = {
+    "oven": r"\b(oven|bake[ds]?|baking|horno|hornea\w*|gratin\w*)\b",
+    "microwave": r"\b(microwave\w*|microondas)\b",
+    "air_fryer": r"\b(air[- ]?fryer|airfryer|freidora de aire)\b",
+    "slow_cooker": r"\b(slow[- ]?cooker|olla lenta|crock[- ]?pot)\b",
+}
+_APPLIANCE = r"(oven|horno|microwave|microondas|air[- ]?fryer|airfryer|freidora de aire|slow[- ]?cooker|olla lenta)"
+# Phrases that name an appliance without needing it: "no oven needed", "sin horno",
+# "heat in the microwave or in a pan", "no-bake", "Dutch oven", "baked beans".
+NOT_NEEDED = [
+    r"\b(without|no|not|never|sin|ni)\s+(an?\s+|the\s+|el\s+|la\s+)?" + _APPLIANCE,
+    r"\b(in\s+|en\s+)?(an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?" + _APPLIANCE + r"\s+(or|o)\b",
+    r"\b(or|o)\s+(in\s+|en\s+)?(an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?" + _APPLIANCE,
+    r"\bno[- ]bake\b", r"\bdutch oven\b", r"\bbaked beans\b",
+]
 
 
 class RequestError(ValueError):
@@ -42,6 +73,10 @@ class PlanRequest:
     language: str = "en"
     notes: str = ""  # free text from the user: treated as data, never as instructions
     supermarket: str = ""  # "" means the default supermarket (see src/catalogue.py)
+    styles: tuple = ()  # up to MAX_STYLES values from STYLES
+    portion: str = "auto"  # a key of PORTIONS
+    protein: str = "auto"  # a key of PROTEIN_TARGETS
+    equipment: frozenset = frozenset()  # values from EQUIPMENT; empty = a normal kitchen, not checked
 
     @property
     def slots(self) -> list:
@@ -57,6 +92,8 @@ class Meal:
     servings: int
     ingredients: tuple  # of IngredientNeed
     steps: tuple  # of str
+    minutes: int = 0  # total time the model estimates; 0 = not given (prompts before v7)
+    tags: tuple = ()  # values from MEAL_TAGS
 
 
 @dataclass(frozen=True)
@@ -91,6 +128,27 @@ def validate_request(request: PlanRequest) -> None:
         raise RequestError(f"Notes must be at most {MAX_NOTES_CHARS} characters")
     if request.supermarket and request.supermarket not in supermarkets():
         raise RequestError(f"Supermarket must be one of {supermarkets()}")
+    if set(request.styles) - set(STYLES) or len(request.styles) > MAX_STYLES:
+        raise RequestError(f"Choose at most {MAX_STYLES} styles from {list(STYLES)}")
+    if request.portion not in PORTIONS:
+        raise RequestError(f"Portion must be one of {list(PORTIONS)}")
+    if request.protein not in PROTEIN_TARGETS:
+        raise RequestError(f"Protein must be one of {list(PROTEIN_TARGETS)}")
+    if set(request.equipment) - set(EQUIPMENT):
+        raise RequestError(f"Equipment must be chosen from {list(EQUIPMENT)}")
+
+
+def equipment_problems(meal, equipment: frozenset) -> list:
+    """Appliances a recipe mentions that the user said they do not have."""
+    if not equipment:  # the user did not say: a normal kitchen, nothing to check
+        return []
+    text = " ".join((meal.recipe_name,) + tuple(meal.steps)).lower()
+    for pattern in NOT_NEEDED:
+        text = re.sub(pattern, " ", text)
+    return [
+        appliance for appliance, pattern in EQUIPMENT_WORDS.items()
+        if appliance not in equipment and re.search(pattern, text)
+    ]
 
 
 def extract_json(text: str) -> dict:
@@ -105,6 +163,27 @@ def extract_json(text: str) -> dict:
     if not isinstance(data, dict):
         raise PlanFormatError("Reply JSON must be an object")
     return data
+
+
+def clean_minutes(value) -> int:
+    """The model's time estimate, or 0 when it is missing or not a sensible number."""
+    try:
+        minutes = int(round(float(value)))
+    except (TypeError, ValueError, OverflowError):  # OverflowError: JSON allows Infinity and 1e999
+        return 0
+    return minutes if 0 < minutes <= MAX_MINUTES else 0
+
+
+def clean_tags(value) -> tuple:
+    """Keep only known tags, once each, at most three. Tags are labels, never rules."""
+    if not isinstance(value, list):
+        return ()
+    tags = []
+    for tag in value:
+        tag = str(tag).strip().lower()
+        if tag in MEAL_TAGS and tag not in tags:
+            tags.append(tag)
+    return tuple(tags[:3])
 
 
 def parse_plan(text: str) -> MealPlan:
@@ -122,6 +201,8 @@ def parse_plan(text: str) -> MealPlan:
                     for i in m["ingredients"]
                 ),
                 steps=tuple(str(step).strip() for step in m["steps"]),
+                minutes=clean_minutes(m.get("minutes")),
+                tags=clean_tags(m.get("tags")),
             )
             for m in data.get("meals", [])
         )
@@ -162,6 +243,8 @@ def validate_plan(plan: MealPlan, request: PlanRequest, full_catalogue: dict, al
             problems.append(f"NO_INGREDIENTS: {where} has no ingredients")
         if meal.servings != request.people:
             problems.append(f"WRONG_SERVINGS: {where} serves {meal.servings}, expected {request.people}")
+        for appliance in equipment_problems(meal, request.equipment):
+            problems.append(f"MISSING_EQUIPMENT: {where} needs {'an' if appliance[0] in 'aeiou' else 'a'} {appliance.replace('_', ' ')}, which the user does not have")
 
         for need in meal.ingredients:
             if need.ingredient_id not in full_catalogue:

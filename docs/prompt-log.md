@@ -26,6 +26,7 @@ Each version is a file in [`prompts/`](../prompts). Scores come from `python3 sc
 | v5 | 2026-09-23 | 10/10 | 9/10 | 10/10 | 8/10 | 6/10 | 9/10 | 52/60 | 14 |
 | v4 (re-run) | 2026-09-24 | 10/10 | 10/10 | 10/10 | 10/10 | 9/10 | 9/10 | 58/60 | 11 |
 | v6 | 2026-09-28 | 10/10 | 10/10 | 10/10 | 10/10 | 8/10 | 10/10 | 58/60 | 12 |
+| v7 | 2026-09-30 | 10/10 | 10/10 | 10/10 | 10/10 | 8/10 | 10/10 | 58/60 | 12 |
 
 ### Quality of the plans (not part of the score)
 
@@ -39,6 +40,7 @@ The script also prints three numbers for the plans that could be priced. They sh
 | v5 | 1.74 | 1.74 | 50% |
 | v4 (re-run) | 2.17 | 1.41 | 47% |
 | v6 | 2.20 | 1.46 | 45% |
+| v7 | 2.30 | 1.54 | 47% |
 
 Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 6 s per model call.
 
@@ -162,6 +164,47 @@ Rice is still in about four recipes out of ten, pasta did not gain (it lost grou
 
 **Risk to watch.** The copy problem may simply shift, not disappear: plans could become pasta-and-lentil-heavy instead of rice-heavy. If so, the lesson is that few-shot examples set the menu whatever we do, and real variety needs a user choice ("cheapest" vs "varied") rather than more examples — the same conclusion v5 pointed to from the other direction.
 
+## v7 — preferences from the step-by-step form
+
+**Problem.** The new step-by-step form asks four things no earlier prompt knew about: meal styles (up to three of healthy, quick, comfort, world, Mediterranean, batch cooking), a plate size in kcal, a protein target in grams, and the appliances in the kitchen. The new meal cards also want a cooking time and a few labels per meal.
+
+**What we changed.** v7 is v4, the shipped prompt, plus:
+
+- four lines in `<request>`: `meal_styles`, `portion_size`, `protein_target`, `kitchen_equipment` (written as plain words by `preference_values()` in `src/prompting.py`, "no preference" when the user skipped the step);
+- two columns in the catalogue, kcal and protein per 100 g or per piece, read from `data/nutrition.csv`, so the model can size portions from data instead of guessing;
+- rules 10 to 13: cook only with the listed equipment, what each style means, size portions with the new columns (the budget comes first), and add `minutes` and 1 to 3 `tags` from a fixed list to every meal;
+- `minutes` and `tags` in example A and in the output format.
+
+Rules 1 to 9 and example B are unchanged, so any difference on the rubric comes from the additions. The swap prompt got the same additions (`prompts/swap2_preferences.md`).
+
+**What the code does around it, not the prompt.** A recipe that mentions an appliance the user does not have ("oven", "horno", "microwave", "air fryer"...) is rejected with `MISSING_EQUIPMENT` and goes through the normal repair. `minutes` and `tags` are read leniently: unknown tags are dropped, a nonsense time becomes 0, and neither can reject a plan, because they are labels. The "protein" label is decided by the code from the counted grams, not by the model. Calories and protein per plate, the price of each meal and its photo are all computed by code.
+
+**What we expected.** The same 58/60: none of the 10 rubric cases uses the new fields, so v7 must at least not break what v4 does. Styles and equipment followed. The nutrition targets we were unsure about: x1 showed the model is bad at adding numbers.
+
+**What happened** (2026-09-30). On the rubric, 58/60 with 12 model calls, the same score as v4 and v6, and the best reuse ratio so far (2.30). The two lost points: the first reply to `tight_budget` and to `sycophancy` was over budget, and the cheaper retry fixed both (the second one became an honest refusal).
+
+The rubric cannot see the preferences, so we also ran two requests with preferences, once with v4 and once with v7 (one run each):
+
+| Request | Prompt | Minutes per recipe | Different recipes | Protein per plate | kcal per plate | Appliance problems | Total |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2 people, 3 days, quick, balanced (600-800 kcal), at least 30 g protein, hob and microwave, 40 EUR | v4 | not given | 6 of 6 | 24 g | 665 | 0 | 18.35 EUR |
+| same | v7 | 12 to 18 | 6 of 6 | 20 g | 416 | 0 | 14.10 EUR |
+| 1 person, 4 days, batch cooking and healthy, light (400-600 kcal), hob and oven, 30 EUR | v4 | not given | 8 of 8 | 23 g | 589 | 0 | 16.40 EUR |
+| same | v7 | 20 to 25 | 4 of 8 | 26 g | 588 | 0 | 12.65 EUR |
+
+The styles work: "quick" gave recipes of 18 minutes or less, "batch cooking" gave 4 recipes for 8 meals, each cooked twice. The light plate was in range. But the protein target was missed: v7 averaged 20 g, *less* than v4 with no target at all, and 416 kcal for a 600-800 target. The model had the numbers in the catalogue and still under-portioned, to stay cheap. Same lesson as x1: the model does not add up.
+
+**Fix in the code, not in the prompt.** `nutrition_gaps()` in `src/nutrition.py` counts every lunch and dinner. If some miss the target, the model gets one retry that lists the counted numbers, and the code keeps whichever plan misses fewer targets while staying within budget (`src/planner.py`). The same two requests with the retry (v7, one run each):
+
+| Request | Model calls | Plates missing a target, first priced plan then final | Protein per plate | kcal per plate | Total |
+| --- | --- | --- | --- | --- | --- |
+| protein request above | 2 | 5, then 2 | 35 g | 666 | 30.26 EUR |
+| light batch request above | 3 (one repair first) | 4, then 2 | 25 g | 543 | 16.53 EUR |
+
+More protein costs more (14.10 to 30.26 EUR, still within the 40 EUR budget), and the quick recipes got longer (15 to 35 minutes): the two goals pull against each other. The retry message says which way each meal must move ("add protein", "bigger portion", "smaller portion") and lists only protein sources this user may eat. With a tight budget the retry cannot always reach the target, so the page says it plainly: in our 36 EUR demo week for 2 people, "1 of 10 plates reach 30 g of protein". One run per request, so these numbers are indicative.
+
+**Kept?** Yes, v7 is the shipped prompt. It ties v4 on the rubric, reuses ingredients a little better, and it is the only version that uses the new form's answers.
+
 ## Model comparison (speed vs quality)
 
 We switched the default model from `claude-sonnet-5` to `claude-haiku-4-5-20251001` early, because the first plans with Sonnet were too slow for a web page (see [`failures.md`](failures.md), "The first real plan took far too long"). We did not time those Sonnet runs, and we never scored Sonnet on the rubric: every evaluation in this log uses Haiku. What we did measure is Haiku's speed, on every run:
@@ -175,9 +218,10 @@ We switched the default model from `claude-sonnet-5` to `claude-haiku-4-5-202510
 | v5 | 9.4 |
 | x1 | 12.5 |
 | v6 | 11.2 |
+| v7 | 11.4 |
 | x2 and x3 | 11.4 and 15.1 |
 
-So one model call takes about 10 to 15 seconds with Haiku, and a plan needs up to three calls when a repair or a cheaper retry is needed. Haiku reaches 58/60 with v4 because the code checks and prices every answer: choosing a smaller model is only safe *because* of that. Scoring Sonnet on the same 10 cases would tell us whether a bigger model needs fewer repairs; we chose not to spend the time and API budget on it.
+So one model call takes about 10 to 15 seconds with Haiku, and a plan needs up to four calls when a repair, a cheaper retry or a nutrition retry is needed. Haiku reaches 58/60 with v4 (and v7) because the code checks and prices every answer: choosing a smaller model is only safe *because* of that. Scoring Sonnet on the same 10 cases would tell us whether a bigger model needs fewer repairs; we chose not to spend the time and API budget on it.
 
 ## Experiments that did not work
 

@@ -123,3 +123,28 @@ def test_options_lists_supermarkets_and_switches_prices():
     assert dia["prices"]["supermarket"] == "dia"
     assert len(dia["ingredients"]) == 85
     assert client.get("/api/options?supermarket=lidl").status_code == 404
+
+
+def test_options_list_the_preferences_the_form_asks_for():
+    data = client.get("/api/options").json()
+    assert "healthy" in data["styles"] and data["max_styles"] == 3
+    assert data["portions"]["balanced"] == [600, 800]
+    assert data["protein_targets"]["high"] == 30
+    assert "oven" in data["equipment"]
+
+
+def test_preferences_are_accepted_by_the_plan_endpoint(monkeypatch):
+    monkeypatch.setattr(app_module, "call_claude", lambda system, messages: GOOD_REPLY)
+    body = {**BODY, "styles": ["quick"], "portion": "light", "protein": "high", "equipment": ["hob"]}
+    assert client.post("/api/plan", json=body).json()["status"] == "ok"
+
+
+def test_unknown_preference_gives_a_422():
+    response = client.post("/api/plan", json={**BODY, "equipment": ["barbecue"]})
+    assert response.status_code == 422
+
+
+def test_options_tell_the_page_which_ingredients_a_diet_hides():
+    ingredients = {i["id"]: i for i in client.get("/api/options").json()["ingredients"]}
+    assert ingredients["chicken_breast"]["diet"] == "meat"
+    assert ingredients["spaghetti"]["allergens"] == ["gluten"]

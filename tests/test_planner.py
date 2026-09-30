@@ -107,7 +107,7 @@ def test_spanish_request_gets_spanish_ingredient_names():
 
 
 def test_every_prompt_version_loads_and_has_no_unfilled_placeholder():
-    for version in ("v1", "v2", "v3", "v4"):
+    for version in ("v1", "v2", "v3", "v4", "v5", "v6", "v7"):
         system, message = render_prompt(version, request(), allowed_catalogue(CATALOGUE))
         assert "{{" not in system and "{{" not in message
 
@@ -153,3 +153,128 @@ def test_an_ingredient_a_shop_does_not_sell_is_reported_not_guessed():
     result = generate_plan(request(), FakeModel(reply(tofu)))
     dia = next(row for row in result["comparison"] if row["supermarket"] == "dia")
     assert dia["missing"] == ["tofu"]
+
+
+def test_every_meal_carries_calories_and_protein_counted_by_code():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))
+    # 200 g rice (355 kcal, 7 g protein per 100 g) + 400 g lentils (100 kcal, 8 g) for 2 servings
+    assert result["meals"][0]["nutrition"] == {"kcal": round((710 + 400) / 2), "protein_g": round((14 + 32) / 2)}
+
+
+def test_meal_prices_add_up_to_the_used_part_of_the_basket_not_more():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))
+    # 200 g of a 1.15 euro kilo of rice + 400 g of a 0.90 euro 570 g jar of lentils
+    meal = result["meals"][0]
+    assert meal["cost_cents"] <= result["budget"]["total_cents"]
+    assert meal["cost_cents"] == round(115 * 0.2 + 90 * 400 / 570)
+
+
+def test_the_examples_inside_prompt_v7_are_valid_and_carry_minutes_and_tags():
+    _, template = load_prompt("v7")
+    example = template.split("Good answer (note how")[1].split("\n", 1)[1].split("\n", 1)[0]
+    plan = parse_plan(example)
+    req = PlanRequest(budget_eur=6, people=1, days=1, meals=("lunch", "dinner"), equipment=frozenset({"hob"}))
+    assert validate_plan(plan, req, CATALOGUE, allowed_catalogue(CATALOGUE)) == []
+    assert [meal.minutes for meal in plan.meals] == [25, 20]
+    assert plan.meals[1].tags == ("quick", "world")
+
+
+def test_v7_prompt_carries_the_preferences_and_the_nutrition_columns():
+    req = request(styles=("quick", "batch"), portion="light", protein="high", equipment=frozenset({"hob", "air_fryer"}))
+    _, message = render_prompt("v7", req, allowed_catalogue(CATALOGUE))
+    assert "meal_styles: quick, batch" in message
+    assert "portion_size: light: 400 to 600 kcal per serving" in message
+    assert "protein_target: at least 30 g of protein per serving" in message
+    assert "kitchen_equipment: air fryer, hob" in message
+    assert "chicken_breast | Chicken breast fillets | g |" in message and "| 110 | 23" in message
+
+
+def test_v7_without_preferences_says_so_instead_of_leaving_blanks():
+    _, message = render_prompt("v7", request(), allowed_catalogue(CATALOGUE))
+    assert "meal_styles: no preference" in message
+    assert "kitchen_equipment: a normal kitchen (hob, oven, microwave)" in message
+
+
+def test_default_prompt_is_v7_and_meals_carry_minutes_and_tags():
+    meals = [{"day": 1, "meal": "dinner", "recipe_name": "Lentil rice", "servings": 2, "ingredients": CHEAP,
+              "steps": ["Cook."], "minutes": 25, "tags": ["healthy", "made-up"]}]
+    model = FakeModel(json.dumps({"feasible": True, "reason": "", "meals": meals, "suggestions": []}))
+    result = generate_plan(request(), model)
+    assert result["prompt_version"] == "v7"
+    assert "kitchen_equipment" in model.calls[0][1][0]["content"]
+    assert result["meals"][0]["minutes"] == 25
+    assert result["meals"][0]["tags"] == ["healthy"]  # unknown tags are dropped
+
+
+def test_every_meal_gets_a_photo_chosen_by_code():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))  # "Test dish" with rice and lentils
+    assert result["meals"][0]["photo"] == "lentils"
+
+
+def test_the_protein_label_is_decided_by_the_counted_grams_not_by_the_model():
+    lean = {"day": 1, "meal": "dinner", "recipe_name": "Rice", "servings": 2, "steps": ["Cook."], "tags": ["protein", "quick"],
+            "ingredients": [{"ingredient_id": "rice_round", "quantity": 160, "unit": "g"}]}
+    rich = {**lean, "tags": ["quick"], "ingredients": [{"ingredient_id": "chicken_breast", "quantity": 400, "unit": "g"}]}
+    for meal, expected in ((lean, ["quick"]), (rich, ["quick", "protein"])):
+        model = FakeModel(json.dumps({"feasible": True, "reason": "", "meals": [meal], "suggestions": []}))
+        assert generate_plan(request(budget_eur=30), model)["meals"][0]["tags"] == expected
+
+
+LEAN = [{"ingredient_id": "rice_round", "quantity": 200, "unit": "g"}, {"ingredient_id": "crushed_tomato", "quantity": 200, "unit": "g"}]
+RICH = [{"ingredient_id": "rice_round", "quantity": 200, "unit": "g"}, {"ingredient_id": "chicken_breast", "quantity": 300, "unit": "g"}]
+
+
+def test_no_nutrition_target_means_no_extra_model_call():
+    model = FakeModel(reply(LEAN))
+    assert generate_plan(request(), model)["status"] == "ok"
+    assert len(model.calls) == 1
+
+
+def test_missed_protein_target_gets_one_retry_with_the_counted_grams():
+    model = FakeModel(reply(LEAN), reply(RICH))
+    result = generate_plan(request(protein="high"), model)
+    retry = model.calls[1][1][-1]["content"]
+    assert "8 g of protein, needs at least 30 g: add protein" in retry  # (14 + 2.6) / 2 servings
+    assert "chicken_breast" in retry.split("Protein-rich ingredients")[1]
+    assert result["meals"][0]["ingredients"][1]["ingredient_id"] == "chicken_breast"
+    assert [step["nutrition_gaps"] for step in result["trace"]] == [1, 0]
+
+
+def test_a_retry_that_does_not_help_keeps_the_first_plan():
+    model = FakeModel(reply(LEAN), reply(LEAN + [{"ingredient_id": "onion_frozen", "quantity": 50, "unit": "g"}]))
+    result = generate_plan(request(protein="high"), model)
+    assert len(model.calls) == 2
+    assert [i["ingredient_id"] for i in result["meals"][0]["ingredients"]] == ["rice_round", "crushed_tomato"]
+
+
+def test_a_retry_that_breaks_the_plan_or_the_budget_keeps_the_first_plan():
+    for second in (reply(INVENTED), reply(EXPENSIVE + RICH)):
+        result = generate_plan(request(protein="high"), FakeModel(reply(LEAN), second))
+        assert result["status"] == "ok"
+        assert result["meals"][0]["ingredients"][1]["ingredient_id"] == "crushed_tomato"
+
+
+def test_portion_target_is_checked_too():
+    model = FakeModel(reply(LEAN), reply(LEAN))
+    generate_plan(request(portion="hearty"), model)
+    assert "kcal, needs at least 800: bigger portion" in model.calls[1][1][-1]["content"]
+
+
+def test_a_plate_above_a_light_target_is_asked_to_be_smaller():
+    big = [{"ingredient_id": "spaghetti", "quantity": 500, "unit": "g"}, {"ingredient_id": "olive_oil", "quantity": 60, "unit": "ml"}]
+    model = FakeModel(reply(big), reply(big))
+    result = generate_plan(request(portion="light", budget_eur=20), model)
+    assert "needs at most 600: smaller portion" in model.calls[1][1][-1]["content"]
+    assert result["trace"][-1]["kept"] is False  # the retry did not help: shown as priced but not kept
+
+
+def test_protein_suggestions_respect_the_diet():
+    model = FakeModel(reply(LEAN), reply(LEAN))
+    generate_plan(request(protein="high", diet="vegan"), model)
+    suggestions = model.calls[1][1][-1]["content"].split("Protein-rich ingredients")[1]
+    assert "chicken" not in suggestions and "eggs" not in suggestions and "tofu" in suggestions
+
+
+def test_a_hearty_plate_has_no_upper_limit_in_the_prompt():
+    _, message = render_prompt("v7", request(portion="hearty"), allowed_catalogue(CATALOGUE))
+    assert "portion_size: hearty: at least 800 kcal per serving" in message

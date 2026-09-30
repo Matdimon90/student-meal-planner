@@ -17,6 +17,7 @@ from dataclasses import asdict
 
 from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supermarkets
 from src.nutrition import meal_nutrition
+from src.photos import choose_photos
 from src.plan import (Meal, MealPlan, PlanFormatError, PlanRequest, RequestError, clean_minutes, clean_tags, parse_plan, validate_plan,
                       validate_request)
 from src.prompting import render_prompt, render_swap_prompt
@@ -259,6 +260,8 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
         "summary": None,
     }
     if plan and plan.feasible:
+        ordered = sorted(plan.meals, key=lambda m: (m.day, ("breakfast", "lunch", "dinner").index(m.meal)))
+        photos = choose_photos(ordered)
         result["meals"] = [
             {
                 "day": meal.day,
@@ -273,8 +276,10 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
                 "nutrition": meal_nutrition(meal.ingredients, meal.servings, catalogue),
                 # Share of the packages this meal uses. The total is still whole packages.
                 "cost_cents": used_cost_cents(meal.ingredients, catalogue, request.already_have),
+                # Chosen by code from the name and ingredients (src/photos.py), never by the model.
+                "photo": photo,
             }
-            for meal in sorted(plan.meals, key=lambda m: (m.day, ("breakfast", "lunch", "dinner").index(m.meal)))
+            for meal, photo in zip(ordered, photos)
         ]
     if lines and check and plan and plan.feasible:
         result["shopping_list"] = [

@@ -204,3 +204,8 @@ def test_default_prompt_is_v7_and_meals_carry_minutes_and_tags():
     assert "kitchen_equipment" in model.calls[0][1][0]["content"]
     assert result["meals"][0]["minutes"] == 25
     assert result["meals"][0]["tags"] == ["healthy"]  # unknown tags are dropped
+
+
+def test_every_meal_gets_a_photo_chosen_by_code():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))  # "Test dish" with rice and lentils
+    assert result["meals"][0]["photo"] == "lentils"

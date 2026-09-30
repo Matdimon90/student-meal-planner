@@ -5,6 +5,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-09-30
+
+### Added
+- Step-by-step form, one question per screen: supermarket, people, days and meals, budget slider, meal styles, diet and allergies, plate size, protein target, ingredients to avoid, what is at home, kitchen equipment. Answers are remembered and can be edited from a Preferences tab.
+- Prompt v7 (`prompts/v7_preferences.md`) and swap prompt `swap2_preferences.md`: the new preferences, kcal and protein columns in the catalogue, `minutes` and `tags` per meal. 58/60 on the rubric, like v4 and v6; now the shipped prompt.
+- Calories and protein per plate, counted by code from `data/nutrition.csv`, and one retry when lunches or dinners miss the plate or protein target (the better plan within budget is kept).
+- Recipes that need an appliance the user does not have (oven, microwave, air fryer, slow cooker) are rejected by code (`MISSING_EQUIPMENT`).
+- Dish photos: 48 Unsplash photos in `public/img/dishes/`, picked by code from the recipe name and ingredients (`src/photos.py`).
+- Price per meal (its share of the packages) and a "protein" label decided from the counted grams.
+- Results in three tabs: the week as photo cards, a shopping list you can tick, and your answers.
+
+### Changed
+- `/api/options` lists the new preferences and each ingredient's diet and allergens; `/api/plan` and `/api/swap` accept `styles`, `portion`, `protein` and `equipment`.
+
+### Fixed
+- `/api/swap` always used the default swap prompt, whatever version was passed.
+
 ## [1.0.1] — 2026-09-28
 
 ### Fixed

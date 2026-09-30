@@ -7,10 +7,11 @@ as static files. Locally, FastAPI serves public/ itself (last line).
 import os
 from typing import List
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from src import payment
 from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, load_catalogue, snapshot_info, supermarkets
 from src.llm import call_claude
 from src.plan import (EQUIPMENT, MAX_BUDGET_EUR, MAX_DAYS, MAX_NOTES_CHARS, MAX_PEOPLE, MAX_STYLES, MEAL_TYPES, PORTIONS,
@@ -44,11 +45,18 @@ class SwapBody(PlanBody):
     plan_meals: List[dict] = []  # the current plan's meals, as returned by /api/plan
 
 
-def _require_access_code(x_access_code: str) -> None:
+def _require_access(x_access_code: str, x_payment_session: str) -> None:
     # Each model call costs us real money. If ACCESS_CODE is set on the server,
-    # only people who know it (us, the teacher) can spend it.
+    # people who know it (us, the teacher) can spend it. If Stripe is set up,
+    # people who paid for a pass can too. With neither, the app is open.
     expected = os.environ.get("ACCESS_CODE")
-    if expected and x_access_code != expected:
+    if expected and x_access_code == expected:
+        return
+    if payment.enabled():
+        if payment.is_paid(x_payment_session):
+            return
+        raise HTTPException(status_code=402, detail="Payment required: buy a pass to generate plans.")
+    if expected:
         raise HTTPException(status_code=401, detail="Wrong or missing access code")
 
 
@@ -117,6 +125,8 @@ def options(supermarket: str = ""):
         "limits": {"people": MAX_PEOPLE, "days": MAX_DAYS, "budget_eur": MAX_BUDGET_EUR, "notes": MAX_NOTES_CHARS},
         "prompt_version": DEFAULT_PROMPT_VERSION,
         "access_code_required": bool(os.environ.get("ACCESS_CODE")),
+        "payment_required": payment.enabled(),
+        "pass_days": payment.pass_days(),
         "ingredients": [
             {
                 "id": p.ingredient_id, "en": p.name_en, "es": p.name_es, "category": p.category,
@@ -129,8 +139,8 @@ def options(supermarket: str = ""):
 
 
 @app.post("/api/plan")
-def plan(body: PlanBody, x_access_code: str = Header(default="")):
-    _require_access_code(x_access_code)
+def plan(body: PlanBody, x_access_code: str = Header(default=""), x_payment_session: str = Header(default="")):
+    _require_access(x_access_code, x_payment_session)
     request = _request_from(body)
     _require_api_key()
     try:
@@ -142,9 +152,9 @@ def plan(body: PlanBody, x_access_code: str = Header(default="")):
 
 
 @app.post("/api/swap")
-def swap(body: SwapBody, x_access_code: str = Header(default="")):
+def swap(body: SwapBody, x_access_code: str = Header(default=""), x_payment_session: str = Header(default="")):
     """Replace a single meal in an existing plan without regenerating the rest."""
-    _require_access_code(x_access_code)
+    _require_access(x_access_code, x_payment_session)
     request = _request_from(body)
     _require_api_key()
     try:
@@ -153,6 +163,19 @@ def swap(body: SwapBody, x_access_code: str = Header(default="")):
         raise HTTPException(status_code=422, detail=str(error))
     except Exception as error:
         raise _model_call_failed(error)
+
+
+@app.post("/api/checkout")
+def checkout(request: Request):
+    """Start a Stripe payment. The page sends the person to the URL we return."""
+    if not payment.enabled():
+        raise HTTPException(status_code=404, detail="Payment is not set up on this server.")
+    # PUBLIC_URL is where Stripe sends the person back. Without it, the address this request came to.
+    base_url = os.environ.get("PUBLIC_URL") or str(request.base_url)
+    try:
+        return {"url": payment.create_checkout(base_url)}
+    except Exception as error:  # wrong key, unknown price, Stripe unreachable
+        raise HTTPException(status_code=502, detail=f"Stripe refused the payment request: {type(error).__name__}")
 
 
 # Local development only: on Vercel, public/ is served before this app is reached.

@@ -17,12 +17,13 @@ from dataclasses import asdict
 
 from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supermarkets
 from src.nutrition import meal_nutrition
-from src.plan import Meal, MealPlan, PlanFormatError, PlanRequest, RequestError, parse_plan, validate_plan, validate_request
+from src.plan import (Meal, MealPlan, PlanFormatError, PlanRequest, RequestError, clean_minutes, clean_tags, parse_plan, validate_plan,
+                      validate_request)
 from src.prompting import render_prompt, render_swap_prompt
 from src.shopping import IngredientNeed, build_shopping_list, check_budget, format_euros, used_cost_cents
 
-DEFAULT_PROMPT_VERSION = "v4"
-SWAP_PROMPT_VERSION = "swap"
+DEFAULT_PROMPT_VERSION = "v7"
+SWAP_PROMPT_VERSION = "swap2"
 MAX_REPAIRS = 1
 MAX_CHEAPER_RETRIES = 1
 
@@ -123,6 +124,8 @@ def _meal_from_dict(data: dict) -> Meal:
             for i in data["ingredients"]
         ),
         steps=tuple(str(step) for step in data["steps"]),
+        minutes=clean_minutes(data.get("minutes")),
+        tags=clean_tags(data.get("tags")),  # the page sends them back: filter them again
     )
 
 
@@ -147,7 +150,7 @@ def swap_meal(request: PlanRequest, current_meals: list, day: int, meal: str, ca
     target = next((m for m in meals if m.day == day and m.meal == meal), None)
     others = [m for m in meals if not (m.day == day and m.meal == meal)]
 
-    system, user_message = render_swap_prompt(request, allowed, day, meal, target.recipe_name if target else "", others)
+    system, user_message = render_swap_prompt(request, allowed, day, meal, target.recipe_name if target else "", others, prompt_version)
     messages = [{"role": "user", "content": user_message}]
     trace = []
     repairs_left = MAX_REPAIRS
@@ -167,7 +170,8 @@ def swap_meal(request: PlanRequest, current_meals: list, day: int, meal: str, ca
             else:
                 # Trust the model for the recipe, not for the slot: force day, meal and servings.
                 new_meal = Meal(day=day, meal=meal, recipe_name=proposed.recipe_name,
-                                servings=request.people, ingredients=proposed.ingredients, steps=proposed.steps)
+                                servings=request.people, ingredients=proposed.ingredients, steps=proposed.steps,
+                                minutes=proposed.minutes, tags=proposed.tags)
                 candidate = MealPlan(feasible=True, reason=parsed.reason, meals=tuple(others + [new_meal]))
                 problems = validate_plan(candidate, request, catalogue, allowed)
         except PlanFormatError as error:
@@ -263,6 +267,8 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
                 "servings": meal.servings,
                 "ingredients": [{**asdict(need), "name": name(need.ingredient_id)} for need in meal.ingredients],
                 "steps": list(meal.steps),
+                "minutes": meal.minutes,
+                "tags": list(meal.tags),
                 # Per serving, added up by code from data/nutrition.csv (estimates).
                 "nutrition": meal_nutrition(meal.ingredients, meal.servings, catalogue),
                 # Share of the packages this meal uses. The total is still whole packages.

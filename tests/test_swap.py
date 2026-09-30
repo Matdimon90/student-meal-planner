@@ -94,3 +94,21 @@ def test_the_other_recipes_are_shown_to_the_model_for_reuse():
     prompt = model.calls[0][1][0]["content"]
     assert "Rice and lentils" in prompt          # the meal that stays
     assert "Egg fried rice" in prompt            # the current recipe being replaced
+
+
+def test_swap_uses_the_preference_prompt_and_keeps_minutes_and_tags():
+    reply = json.loads(one_meal(REUSE, name="Quick lentil rice"))
+    reply["meals"][0].update(minutes=15, tags=["quick"])
+    model = FakeModel(json.dumps(reply))
+    result = swap_meal(request(equipment=frozenset({"hob"})), PLAN, 1, "dinner", model)
+    assert result["prompt_version"] == "swap2"
+    assert "kitchen_equipment: hob" in model.calls[0][1][0]["content"]
+    new = next(m for m in result["meals"] if m["meal"] == "dinner")
+    assert (new["minutes"], new["tags"]) == (15, ["quick"])
+
+
+def test_tags_sent_back_by_the_page_are_filtered_again():
+    plan = [dict(PLAN[0], tags=["healthy", "<img src=x onerror=alert(1)>"], minutes="soon"), PLAN[1]]
+    result = swap_meal(request(), plan, 1, "dinner", FakeModel(one_meal(REUSE)))
+    lunch = next(m for m in result["meals"] if m["meal"] == "lunch")
+    assert lunch["tags"] == ["healthy"] and lunch["minutes"] == 0

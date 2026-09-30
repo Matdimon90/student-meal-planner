@@ -107,7 +107,7 @@ def test_spanish_request_gets_spanish_ingredient_names():
 
 
 def test_every_prompt_version_loads_and_has_no_unfilled_placeholder():
-    for version in ("v1", "v2", "v3", "v4"):
+    for version in ("v1", "v2", "v3", "v4", "v5", "v6", "v7"):
         system, message = render_prompt(version, request(), allowed_catalogue(CATALOGUE))
         assert "{{" not in system and "{{" not in message
 
@@ -167,3 +167,40 @@ def test_meal_prices_add_up_to_the_used_part_of_the_basket_not_more():
     meal = result["meals"][0]
     assert meal["cost_cents"] <= result["budget"]["total_cents"]
     assert meal["cost_cents"] == round(115 * 0.2 + 90 * 400 / 570)
+
+
+def test_the_examples_inside_prompt_v7_are_valid_and_carry_minutes_and_tags():
+    _, template = load_prompt("v7")
+    example = template.split("Good answer (note how")[1].split("\n", 1)[1].split("\n", 1)[0]
+    plan = parse_plan(example)
+    req = PlanRequest(budget_eur=6, people=1, days=1, meals=("lunch", "dinner"), equipment=frozenset({"hob"}))
+    assert validate_plan(plan, req, CATALOGUE, allowed_catalogue(CATALOGUE)) == []
+    assert [meal.minutes for meal in plan.meals] == [25, 20]
+    assert plan.meals[1].tags == ("quick", "world")
+
+
+def test_v7_prompt_carries_the_preferences_and_the_nutrition_columns():
+    req = request(styles=("quick", "batch"), portion="light", protein="high", equipment=frozenset({"hob", "air_fryer"}))
+    _, message = render_prompt("v7", req, allowed_catalogue(CATALOGUE))
+    assert "meal_styles: quick, batch" in message
+    assert "portion_size: light: 400 to 600 kcal per serving" in message
+    assert "protein_target: at least 30 g of protein per serving" in message
+    assert "kitchen_equipment: air fryer, hob" in message
+    assert "chicken_breast | Chicken breast fillets | g |" in message and "| 110 | 23" in message
+
+
+def test_v7_without_preferences_says_so_instead_of_leaving_blanks():
+    _, message = render_prompt("v7", request(), allowed_catalogue(CATALOGUE))
+    assert "meal_styles: no preference" in message
+    assert "kitchen_equipment: a normal kitchen (hob, oven, microwave)" in message
+
+
+def test_default_prompt_is_v7_and_meals_carry_minutes_and_tags():
+    meals = [{"day": 1, "meal": "dinner", "recipe_name": "Lentil rice", "servings": 2, "ingredients": CHEAP,
+              "steps": ["Cook."], "minutes": 25, "tags": ["healthy", "made-up"]}]
+    model = FakeModel(json.dumps({"feasible": True, "reason": "", "meals": meals, "suggestions": []}))
+    result = generate_plan(request(), model)
+    assert result["prompt_version"] == "v7"
+    assert "kitchen_equipment" in model.calls[0][1][0]["content"]
+    assert result["meals"][0]["minutes"] == 25
+    assert result["meals"][0]["tags"] == ["healthy"]  # unknown tags are dropped

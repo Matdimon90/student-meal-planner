@@ -215,3 +215,18 @@ def test_the_problem_message_reads_well():
     request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
     problems = problems_for(make_reply([baked_meal()]), request)
     assert any("needs an oven" in p for p in problems)
+
+
+# --- minutes and tags (prompt v7) ----------------------------------------------
+
+def test_minutes_and_tags_are_optional_and_cleaned():
+    meal = {**make_meal(), "minutes": "35", "tags": ["Quick", "quick", "spicy", "healthy", "world", "comfort"]}
+    parsed = parse_plan(make_reply([meal])).meals[0]
+    assert parsed.minutes == 35
+    assert parsed.tags == ("quick", "healthy", "world")  # known, unique, at most three
+    assert parse_plan(make_reply([make_meal()])).meals[0].minutes == 0  # older prompts: no minutes
+
+
+@pytest.mark.parametrize("value", [None, "soon", -5, 0, 9999, float("inf")])
+def test_nonsense_minutes_become_zero(value):
+    assert parse_plan(make_reply([{**make_meal(), "minutes": value}])).meals[0].minutes == 0

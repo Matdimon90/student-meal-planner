@@ -30,6 +30,9 @@ PORTIONS = {"auto": None, "light": (400, 600), "balanced": (600, 800), "hearty":
 # Minimum grams of protein per serving for lunch and dinner.
 PROTEIN_TARGETS = {"auto": 0, "high": 30, "extra": 40, "max": 50}
 EQUIPMENT = ("hob", "oven", "microwave", "air_fryer", "slow_cooker")
+# Labels the model may put on a meal (prompt v7). Anything else is dropped.
+MEAL_TAGS = ("healthy", "quick", "protein", "comfort", "world", "mediterranean", "batch")
+MAX_MINUTES = 240
 # Words that show a recipe needs an appliance, in English and Spanish. The hob
 # is not checked: "pan" or "boil" are too common to tell it apart reliably.
 EQUIPMENT_WORDS = {
@@ -89,6 +92,8 @@ class Meal:
     servings: int
     ingredients: tuple  # of IngredientNeed
     steps: tuple  # of str
+    minutes: int = 0  # total time the model estimates; 0 = not given (prompts before v7)
+    tags: tuple = ()  # values from MEAL_TAGS
 
 
 @dataclass(frozen=True)
@@ -160,6 +165,27 @@ def extract_json(text: str) -> dict:
     return data
 
 
+def clean_minutes(value) -> int:
+    """The model's time estimate, or 0 when it is missing or not a sensible number."""
+    try:
+        minutes = int(round(float(value)))
+    except (TypeError, ValueError, OverflowError):  # OverflowError: JSON allows Infinity and 1e999
+        return 0
+    return minutes if 0 < minutes <= MAX_MINUTES else 0
+
+
+def clean_tags(value) -> tuple:
+    """Keep only known tags, once each, at most three. Tags are labels, never rules."""
+    if not isinstance(value, list):
+        return ()
+    tags = []
+    for tag in value:
+        tag = str(tag).strip().lower()
+        if tag in MEAL_TAGS and tag not in tags:
+            tags.append(tag)
+    return tuple(tags[:3])
+
+
 def parse_plan(text: str) -> MealPlan:
     """Turn the model's reply into a MealPlan, or raise PlanFormatError."""
     data = extract_json(text)
@@ -175,6 +201,8 @@ def parse_plan(text: str) -> MealPlan:
                     for i in m["ingredients"]
                 ),
                 steps=tuple(str(step).strip() for step in m["steps"]),
+                minutes=clean_minutes(m.get("minutes")),
+                tags=clean_tags(m.get("tags")),
             )
             for m in data.get("meals", [])
         )

@@ -153,3 +153,9 @@ def test_an_ingredient_a_shop_does_not_sell_is_reported_not_guessed():
     result = generate_plan(request(), FakeModel(reply(tofu)))
     dia = next(row for row in result["comparison"] if row["supermarket"] == "dia")
     assert dia["missing"] == ["tofu"]
+
+
+def test_every_meal_carries_calories_and_protein_counted_by_code():
+    result = generate_plan(request(), FakeModel(reply(CHEAP)))
+    # 200 g rice (355 kcal, 7 g protein per 100 g) + 400 g lentils (100 kcal, 8 g) for 2 servings
+    assert result["meals"][0]["nutrition"] == {"kcal": round((710 + 400) / 2), "protein_g": round((14 + 32) / 2)}

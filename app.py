@@ -13,7 +13,8 @@ from pydantic import BaseModel
 
 from src.catalogue import DIET_ALLOWS, KNOWN_ALLERGENS, load_catalogue, snapshot_info, supermarkets
 from src.llm import call_claude
-from src.plan import MAX_BUDGET_EUR, MAX_DAYS, MAX_NOTES_CHARS, MAX_PEOPLE, MEAL_TYPES, PlanRequest, RequestError
+from src.plan import (EQUIPMENT, MAX_BUDGET_EUR, MAX_DAYS, MAX_NOTES_CHARS, MAX_PEOPLE, MAX_STYLES, MEAL_TYPES, PORTIONS,
+                      PROTEIN_TARGETS, STYLES, PlanRequest, RequestError)
 from src.planner import DEFAULT_PROMPT_VERSION, generate_plan, swap_meal
 
 app = FastAPI(title="Student Meal Planner")
@@ -31,6 +32,10 @@ class PlanBody(BaseModel):
     language: str = "en"
     notes: str = ""
     supermarket: str = ""  # empty = default supermarket
+    styles: List[str] = []
+    portion: str = "auto"
+    protein: str = "auto"
+    equipment: List[str] = []  # empty = a normal kitchen
 
 
 class SwapBody(PlanBody):
@@ -69,6 +74,10 @@ def _request_from(body: "PlanBody") -> PlanRequest:
         language=body.language,
         notes=body.notes,
         supermarket=body.supermarket,
+        styles=tuple(body.styles),
+        portion=body.portion,
+        protein=body.protein,
+        equipment=frozenset(body.equipment),
     )
 
 
@@ -100,6 +109,11 @@ def options(supermarket: str = ""):
         "diets": sorted(DIET_ALLOWS),
         "allergens": sorted(KNOWN_ALLERGENS),
         "meals": list(MEAL_TYPES),
+        "styles": list(STYLES),
+        "max_styles": MAX_STYLES,
+        "portions": {key: list(kcal) if kcal else None for key, kcal in PORTIONS.items()},
+        "protein_targets": PROTEIN_TARGETS,
+        "equipment": list(EQUIPMENT),
         "limits": {"people": MAX_PEOPLE, "days": MAX_DAYS, "budget_eur": MAX_BUDGET_EUR, "notes": MAX_NOTES_CHARS},
         "prompt_version": DEFAULT_PROMPT_VERSION,
         "access_code_required": bool(os.environ.get("ACCESS_CODE")),

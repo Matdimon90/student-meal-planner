@@ -62,6 +62,11 @@ def problems_for(reply, request=REQUEST):
         {"allergies": frozenset({"kryptonite"})},
         {"language": "fr"},
         {"notes": "x" * 301},
+        {"styles": ("spicy",)},
+        {"styles": ("healthy", "quick", "comfort", "world")},
+        {"portion": "huge"},
+        {"protein": "100g"},
+        {"equipment": frozenset({"barbecue"})},
     ],
 )
 def test_invalid_requests_are_rejected(changes):
@@ -72,6 +77,11 @@ def test_invalid_requests_are_rejected(changes):
 
 def test_valid_request_passes():
     validate_request(PlanRequest(budget_eur=35.5, people=3, days=7, meals=("breakfast", "lunch", "dinner")))
+
+
+def test_request_with_every_preference_passes():
+    validate_request(PlanRequest(budget_eur=35, people=2, days=5, styles=("healthy", "quick", "batch"),
+                                 portion="balanced", protein="high", equipment=frozenset({"hob", "microwave"})))
 
 
 def test_slots_lists_every_day_and_meal_in_order():

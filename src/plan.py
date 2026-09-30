@@ -20,6 +20,16 @@ MAX_NOTES_CHARS = 300
 # More than this per person in one recipe is almost certainly a model mistake.
 MAX_PER_SERVING = {"g": 1000, "ml": 1000, "ud": 6}
 
+# Preferences asked by the step-by-step form. They guide the model; only the
+# equipment is also checked by code (see equipment_problems).
+STYLES = ("healthy", "quick", "comfort", "world", "mediterranean", "batch")
+MAX_STYLES = 3
+# Calories per serving for lunch and dinner. "auto" lets the model decide.
+PORTIONS = {"auto": None, "light": (400, 600), "balanced": (600, 800), "hearty": (800, 1000)}
+# Minimum grams of protein per serving for lunch and dinner.
+PROTEIN_TARGETS = {"auto": 0, "high": 30, "extra": 40, "max": 50}
+EQUIPMENT = ("hob", "oven", "microwave", "air_fryer", "slow_cooker")
+
 
 class RequestError(ValueError):
     """The user's input is invalid. The message is safe to show to the user."""
@@ -42,6 +52,10 @@ class PlanRequest:
     language: str = "en"
     notes: str = ""  # free text from the user: treated as data, never as instructions
     supermarket: str = ""  # "" means the default supermarket (see src/catalogue.py)
+    styles: tuple = ()  # up to MAX_STYLES values from STYLES
+    portion: str = "auto"  # a key of PORTIONS
+    protein: str = "auto"  # a key of PROTEIN_TARGETS
+    equipment: frozenset = frozenset()  # values from EQUIPMENT; empty = a normal kitchen, not checked
 
     @property
     def slots(self) -> list:
@@ -91,6 +105,14 @@ def validate_request(request: PlanRequest) -> None:
         raise RequestError(f"Notes must be at most {MAX_NOTES_CHARS} characters")
     if request.supermarket and request.supermarket not in supermarkets():
         raise RequestError(f"Supermarket must be one of {supermarkets()}")
+    if set(request.styles) - set(STYLES) or len(request.styles) > MAX_STYLES:
+        raise RequestError(f"Choose at most {MAX_STYLES} styles from {list(STYLES)}")
+    if request.portion not in PORTIONS:
+        raise RequestError(f"Portion must be one of {list(PORTIONS)}")
+    if request.protein not in PROTEIN_TARGETS:
+        raise RequestError(f"Protein must be one of {list(PROTEIN_TARGETS)}")
+    if set(request.equipment) - set(EQUIPMENT):
+        raise RequestError(f"Equipment must be chosen from {list(EQUIPMENT)}")
 
 
 def extract_json(text: str) -> dict:

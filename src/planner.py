@@ -27,6 +27,7 @@ DEFAULT_PROMPT_VERSION = "v7"
 SWAP_PROMPT_VERSION = "swap2"
 MAX_REPAIRS = 1
 MAX_CHEAPER_RETRIES = 1
+PROTEIN_TAG_GRAMS = 30  # a meal is labelled "protein" from this many grams per serving
 
 
 def _repair_message(problems: list) -> str:
@@ -262,25 +263,7 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
     if plan and plan.feasible:
         ordered = sorted(plan.meals, key=lambda m: (m.day, ("breakfast", "lunch", "dinner").index(m.meal)))
         photos = choose_photos(ordered)
-        result["meals"] = [
-            {
-                "day": meal.day,
-                "meal": meal.meal,
-                "recipe_name": meal.recipe_name,
-                "servings": meal.servings,
-                "ingredients": [{**asdict(need), "name": name(need.ingredient_id)} for need in meal.ingredients],
-                "steps": list(meal.steps),
-                "minutes": meal.minutes,
-                "tags": list(meal.tags),
-                # Per serving, added up by code from data/nutrition.csv (estimates).
-                "nutrition": meal_nutrition(meal.ingredients, meal.servings, catalogue),
-                # Share of the packages this meal uses. The total is still whole packages.
-                "cost_cents": used_cost_cents(meal.ingredients, catalogue, request.already_have),
-                # Chosen by code from the name and ingredients (src/photos.py), never by the model.
-                "photo": photo,
-            }
-            for meal, photo in zip(ordered, photos)
-        ]
+        result["meals"] = [_meal_view(meal, photo, catalogue, request, name) for meal, photo in zip(ordered, photos)]
     if lines and check and plan and plan.feasible:
         result["shopping_list"] = [
             {
@@ -303,6 +286,31 @@ def _result(status, request, prompt_version, trace, catalogue, plan=None, lines=
         if supermarket:  # a hand-made catalogue (tests) belongs to no shop: nothing to compare
             result["comparison"] = compare_supermarkets(plan, request, supermarket)
     return result
+
+
+def _meal_view(meal, photo: str, catalogue: dict, request: PlanRequest, name) -> dict:
+    """One meal as the web page shows it. Every number here comes from code."""
+    nutrition = meal_nutrition(meal.ingredients, meal.servings, catalogue)  # per serving, estimates
+    # The model labels its meals, but "protein" is a claim about a number,
+    # so the code decides it from the counted grams.
+    tags = [tag for tag in meal.tags if tag != "protein"]
+    if nutrition["protein_g"] >= PROTEIN_TAG_GRAMS:
+        tags = tags[:2] + ["protein"]
+    return {
+        "day": meal.day,
+        "meal": meal.meal,
+        "recipe_name": meal.recipe_name,
+        "servings": meal.servings,
+        "ingredients": [{**asdict(need), "name": name(need.ingredient_id)} for need in meal.ingredients],
+        "steps": list(meal.steps),
+        "minutes": meal.minutes,
+        "tags": tags,
+        "nutrition": nutrition,
+        # Share of the packages this meal uses. The total is still whole packages.
+        "cost_cents": used_cost_cents(meal.ingredients, catalogue, request.already_have),
+        # Chosen by code from the name and ingredients (src/photos.py), never by the model.
+        "photo": photo,
+    }
 
 
 def _supermarket_of(catalogue: dict) -> str:

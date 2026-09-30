@@ -209,3 +209,12 @@ def test_default_prompt_is_v7_and_meals_carry_minutes_and_tags():
 def test_every_meal_gets_a_photo_chosen_by_code():
     result = generate_plan(request(), FakeModel(reply(CHEAP)))  # "Test dish" with rice and lentils
     assert result["meals"][0]["photo"] == "lentils"
+
+
+def test_the_protein_label_is_decided_by_the_counted_grams_not_by_the_model():
+    lean = {"day": 1, "meal": "dinner", "recipe_name": "Rice", "servings": 2, "steps": ["Cook."], "tags": ["protein", "quick"],
+            "ingredients": [{"ingredient_id": "rice_round", "quantity": 160, "unit": "g"}]}
+    rich = {**lean, "tags": ["quick"], "ingredients": [{"ingredient_id": "chicken_breast", "quantity": 400, "unit": "g"}]}
+    for meal, expected in ((lean, ["quick"]), (rich, ["quick", "protein"])):
+        model = FakeModel(json.dumps({"feasible": True, "reason": "", "meals": [meal], "suggestions": []}))
+        assert generate_plan(request(budget_eur=30), model)["meals"][0]["tags"] == expected

@@ -120,6 +120,7 @@ def options(supermarket: str = ""):
         "ingredients": [
             {
                 "id": p.ingredient_id, "en": p.name_en, "es": p.name_es, "category": p.category,
+                "diet": p.diet, "allergens": sorted(p.allergens),
                 "package": f"{p.package_size:g} {p.package_unit}", "price_cents": p.package_price_cents,
             }
             for p in load_catalogue(supermarket=supermarket).values()

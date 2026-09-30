@@ -142,3 +142,9 @@ def test_preferences_are_accepted_by_the_plan_endpoint(monkeypatch):
 def test_unknown_preference_gives_a_422():
     response = client.post("/api/plan", json={**BODY, "equipment": ["barbecue"]})
     assert response.status_code == 422
+
+
+def test_options_tell_the_page_which_ingredients_a_diet_hides():
+    ingredients = {i["id"]: i for i in client.get("/api/options").json()["ingredients"]}
+    assert ingredients["chicken_breast"]["diet"] == "meat"
+    assert ingredients["spaghetti"]["allergens"] == ["gluten"]

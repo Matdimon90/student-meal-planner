@@ -71,10 +71,22 @@ Open http://127.0.0.1:8000, press "Plan my week", answer the questions and press
 
 **Online version.** https://student-meal-planner-two.vercel.app — it asks for an access code, because every plan costs us model calls (ask the team for it). Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
 
+## Payment (Stripe, optional)
+
+The planner can sell a pass: one payment unlocks plan generation for 30 days. It is off until two variables are set.
+
+1. Create a Stripe account and stay in **test mode**.
+2. Product catalogue → add a product (e.g. "Meal planner pass") with a **one-off** price. Copy the price id (`price_...`).
+3. Developers → API keys → copy the secret key (`sk_test_...`).
+4. Put both in `.env` (`STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`) and restart the server. On Vercel: Settings → Environment Variables, add them plus `PUBLIC_URL`, then redeploy.
+5. Pay with the test card `4242 4242 4242 4242`, any future date, any CVC.
+
+How it works: `/api/checkout` opens a Stripe Checkout page; Stripe sends the person back with the session id, which the page keeps and sends with every plan. The server asks Stripe if that session was paid (`src/payment.py`). No database, no webhook, no card data on our side. The access code still works for the team and the teacher.
+
 ## Project structure
 
 ```
-app.py                  web entry point (FastAPI): /api/options, /api/plan, /api/swap
+app.py                  web entry point (FastAPI): /api/options, /api/plan, /api/swap, /api/checkout
 public/index.html       the web page (EN/ES): step-by-step form, week, shopping list
 public/img/dishes/      dish photos (Unsplash) + CREDITS.md
 src/

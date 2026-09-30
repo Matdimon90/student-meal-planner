@@ -410,6 +410,9 @@ const T = {
     hob:"Hob", oven:"Oven", microwave:"Microwave", air_fryer:"Air fryer", slow_cooker:"Slow cooker",
     equipInfoT:"Fitted to your kitchen", equipInfo:"No oven, no oven recipes: the code checks every step.",
     noteL:"Anything else? (optional)", notePh:"Tiny kitchen, one pan, no spicy food.", codeL:"Access code", codeNeeded:"Enter the access code to generate a plan.",
+    payT:"A pass unlocks the planner", pay:d=>`Unlimited plans for ${d} days. Secure payment with Stripe.`, payBtn:"Buy a pass", payGoing:"Opening the payment page…",
+    payOkT:"Pass active", payOk:"Thank you! You can generate your plan.", payNeeded:"Buy a pass (or enter the access code) to generate a plan.",
+    payCancelled:"Payment cancelled. Nothing was charged.", payExpired:"Your pass has expired or could not be checked. Buy a new one to continue.",
     grains:"Rice, pasta & flour", bread:"Bread", legumes:"Pulses & plant protein", dairy_eggs:"Eggs & dairy", pantry:"Pantry", spices:"Spices", vegetables:"Vegetables", fruit:"Fruit", meat_fish:"Meat & fish",
     loadTitle:"Preparing your week…", loadSub:"The AI picks the meals, the code prices every package.",
     load1:"Analysing your budget and preferences", load2:"Creating your meal plan", load3:"Building the shopping list",
@@ -484,6 +487,9 @@ const T = {
     hob:"Fuegos", oven:"Horno", microwave:"Microondas", air_fryer:"Freidora de aire", slow_cooker:"Olla lenta",
     equipInfoT:"Adaptado a tu cocina", equipInfo:"Sin horno, no hay recetas de horno: el código revisa cada paso.",
     noteL:"¿Algo más? (opcional)", notePh:"Cocina pequeña, una sartén, nada picante.", codeL:"Código de acceso", codeNeeded:"Introduce el código de acceso para generar un plan.",
+    payT:"Un pase desbloquea el planificador", pay:d=>`Planes ilimitados durante ${d} días. Pago seguro con Stripe.`, payBtn:"Comprar un pase", payGoing:"Abriendo la página de pago…",
+    payOkT:"Pase activo", payOk:"¡Gracias! Ya puedes generar tu plan.", payNeeded:"Compra un pase (o introduce el código de acceso) para generar un plan.",
+    payCancelled:"Pago cancelado. No se ha cobrado nada.", payExpired:"Tu pase ha caducado o no se ha podido comprobar. Compra uno nuevo para continuar.",
     grains:"Arroz, pasta y harina", bread:"Pan", legumes:"Legumbres y proteína vegetal", dairy_eggs:"Huevos y lácteos", pantry:"Despensa", spices:"Especias", vegetables:"Verduras", fruit:"Fruta", meat_fish:"Carne y pescado",
     loadTitle:"Preparando tu semana…", loadSub:"La IA elige los platos, el código valora cada envase.",
     load1:"Analizando tu presupuesto y tus preferencias", load2:"Creando tu plan de comidas", load3:"Generando la lista de la compra",
@@ -613,6 +619,7 @@ const savedAnswers = store.get("smp.answers", null);
 let S = { ...structuredClone(DEFAULTS), ...(savedAnswers || {}) };  // a deep copy: toggles must never change DEFAULTS
 let options = null, view = "welcome", step = 0, editing = false, tab = "plan", errorMsg = "";
 let lastBody = null, lastResult = null, lastAnalysis = null, loading = null, accessCode = "", search = "";
+let paySession = store.get("smp.pay", "");  // id of the paid Stripe Checkout session, checked by the server on every plan
 let shown = "";  // which screen was drawn last: re-drawing the same one (a tap on +) must not replay the entrance animation
 const save = () => store.set("smp.answers", S);
 
@@ -722,6 +729,8 @@ function stepHtml(name) {
     <div class="tiles">${EQUIPMENT.map(e => `<button type="button" class="tile ${S.equipment.includes(e) ? "on" : ""}" data-pick="${e}" aria-pressed="${S.equipment.includes(e)}"><span class="ic">${icon(e)}</span>${esc(t(e))}</button>`).join("")}</div>
     ${info("shield", t("equipInfoT"), t("equipInfo"))}
     <span class="label">${esc(t("noteL"))}</span><textarea id="notes" rows="2" maxlength="300" placeholder="${esc(t("notePh"))}">${esc(S.notes)}</textarea>
+    ${options && options.payment_required ? (paySession ? info("shield", t("payOkT"), t("payOk"))
+      : `${info("shield", t("payT"), L("pay", options.pass_days))}<button type="button" class="btn" style="margin-top:12px" data-go="pay">${esc(t("payBtn"))}</button>`) : ""}
     ${options && options.access_code_required ? `<span class="label">${esc(t("codeL"))}</span><input class="text" id="code" type="password" autocomplete="off" value="${esc(accessCode)}">` : ""}
     <div class="error" role="alert">${esc(errorMsg)}</div>`;
   return "";
@@ -811,15 +820,17 @@ function body() {
     styles:S.styles, portion:S.portion, protein:S.protein, equipment:S.equipment };
 }
 async function call(path, payload) {
-  const response = await fetch(path, { method:"POST", headers:{ "Content-Type":"application/json", "X-Access-Code":accessCode }, body:JSON.stringify(payload) });
+  const response = await fetch(path, { method:"POST", headers:{ "Content-Type":"application/json", "X-Access-Code":accessCode, "X-Payment-Session":paySession }, body:JSON.stringify(payload) });
   const data = await response.json().catch(() => ({}));
+  if (response.status === 402 && paySession) { paySession = ""; store.set("smp.pay", ""); throw new Error(t("payExpired")); }
   if (!response.ok) { const e = new Error(typeof data.detail === "string" ? data.detail : (data.detail || []).map(d => d.msg).join(", ") || response.statusText); e.status = response.status; throw e; }
   return data;
 }
 async function generate() {
   if (loading) return;
   if (!S.shop && options) S.shop = options.supermarkets[0].supermarket;
-  if (options && options.access_code_required && !accessCode) { errorMsg = t("codeNeeded"); view = "wizard"; step = STEPS.length - 1; editing = false; render(); return; }
+  if (options && options.payment_required && !paySession && !accessCode) { errorMsg = t("payNeeded"); view = "wizard"; step = STEPS.length - 1; editing = false; render(); return; }
+  if (options && options.access_code_required && !options.payment_required && !accessCode) { errorMsg = t("codeNeeded"); view = "wizard"; step = STEPS.length - 1; editing = false; render(); return; }
   lastBody = body(); save();
   loading = { started:Date.now(), timer:null, done:false }; view = "loading"; render(); scrollTo({ top:0 });
   try {
@@ -1109,6 +1120,7 @@ document.addEventListener("click", e => {
   if (d.go === "start") { view = "wizard"; step = 0; editing = false; render(); scrollTo({ top:0 }); return; }
   if (d.go === "reuse" || d.go === "regen") { generate(); return; }
   if (d.go === "reset") { S = { ...structuredClone(DEFAULTS), shop:S.shop }; save(); lastResult = null; view = "wizard"; step = 0; render(); scrollTo({ top:0 }); return; }
+  if (d.go === "pay") { startCheckout(el); return; }
   if (d.go === "next") { nextStep(); return; }
   if (d.go === "back") { prevStep(); return; }
   if (d.pick) { pick(d.pick); return; }
@@ -1148,6 +1160,23 @@ $("theme").addEventListener("click", () => {
   store.set("theme", dark ? "light" : "dark"); applyTheme(); if (view === "results") render();
 });
 
+/* ---------- payment ---------- */
+async function startCheckout(button) {
+  readInputs(); save(); errorMsg = "";
+  button.disabled = true; button.textContent = t("payGoing");
+  try { location.href = (await call("/api/checkout", {})).url; }  // answers are saved: they are still there when Stripe sends the person back
+  catch (error) { errorMsg = error.message; render(); }
+}
+function returnFromCheckout() {
+  // Stripe sends the person back to /?session_id=cs_... (paid) or /?checkout=cancelled.
+  const params = new URLSearchParams(location.search);
+  if (!params.has("session_id") && !params.has("checkout")) return;
+  if (params.get("session_id")) { paySession = params.get("session_id"); store.set("smp.pay", paySession); }
+  else errorMsg = t("payCancelled");
+  history.replaceState(null, "", location.pathname);
+  view = "wizard"; step = STEPS.length - 1;
+}
+
 /* ---------- start ---------- */
 function loadOptions(supermarket) {
   // Package sizes and prices differ per shop, so the ingredient list is reloaded when the shop changes.
@@ -1155,7 +1184,7 @@ function loadOptions(supermarket) {
     options = o; if (!S.shop && view !== "welcome") S.shop = o.supermarkets[0].supermarket; paintChrome(); if (view === "wizard" && !["budget","dislike","have"].includes(STEPS[step])) render();
   }).catch(() => { errorMsg = t("loadError"); if (view === "wizard") render(); });
 }
-applyTheme(); render();
+returnFromCheckout(); applyTheme(); render();
 loadOptions(S.shop).then(() => render());
 </script>
 </body>

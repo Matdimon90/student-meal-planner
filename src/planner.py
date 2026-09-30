@@ -6,6 +6,8 @@
             -> code checks the answer, asks the model to repair it if needed
             -> code builds the shopping list and the real total
             -> if over budget, MODEL gets one chance to make it cheaper
+            -> if meals miss the portion or protein target (counted by code),
+               MODEL gets one chance to adjust them; the better plan is kept
             -> code reports the final result honestly
 
 The model is creative; the code is the judge. The model never calculates
@@ -16,7 +18,7 @@ import time
 from dataclasses import asdict
 
 from src.catalogue import allowed_catalogue, load_catalogue, snapshot_info, supermarkets
-from src.nutrition import meal_nutrition
+from src.nutrition import meal_nutrition, nutrition_gaps, protein_sources
 from src.photos import choose_photos
 from src.plan import (Meal, MealPlan, PlanFormatError, PlanRequest, RequestError, clean_minutes, clean_tags, parse_plan, validate_plan,
                       validate_request)
@@ -27,6 +29,7 @@ DEFAULT_PROMPT_VERSION = "v7"
 SWAP_PROMPT_VERSION = "swap2"
 MAX_REPAIRS = 1
 MAX_CHEAPER_RETRIES = 1
+MAX_NUTRITION_RETRIES = 1
 PROTEIN_TAG_GRAMS = 30  # a meal is labelled "protein" from this many grams per serving
 
 
@@ -53,6 +56,19 @@ def _cheaper_message(check, lines: list, catalogue: dict) -> str:
     )
 
 
+def _nutrition_message(gaps: list, allowed: dict) -> str:
+    listed = "\n".join(f"- {gap}" for gap in gaps[:15])
+    sources = ", ".join(protein_sources(allowed))
+    return (
+        "I counted the calories and protein of one serving of each meal with our nutrition table. "
+        "These meals miss the user's targets:\n"
+        f"{listed}\n"
+        "Return the full plan in the same JSON format with these meals adjusted as listed. "
+        + (f"Protein-rich ingredients this user can eat: {sources}. " if sources else "")
+        + "Stay within budget_eur, keep the other meals as they are."
+    )
+
+
 def _code_suggestions(request: PlanRequest, check, lines: list) -> list:
     """Adjustments computed from the real numbers, not written by the model."""
     suggestions = [f"budget_needed:{format_euros(check.total_cents)}"]
@@ -75,8 +91,9 @@ def generate_plan(request: PlanRequest, call_model, prompt_version: str = DEFAUL
     system, user_message = render_prompt(prompt_version, request, allowed)
     messages = [{"role": "user", "content": user_message}]
     trace = []  # what happened at each model call, kept for transparency and for evaluation
-    repairs_left, cheaper_left = MAX_REPAIRS, MAX_CHEAPER_RETRIES
+    repairs_left, cheaper_left, nutrition_left = MAX_REPAIRS, MAX_CHEAPER_RETRIES, MAX_NUTRITION_RETRIES
     plan = lines = check = None
+    kept = None  # (plan, lines, check, gaps): a good plan kept while the model tries to meet the nutrition targets
 
     while True:
         started = time.perf_counter()
@@ -92,6 +109,8 @@ def generate_plan(request: PlanRequest, call_model, prompt_version: str = DEFAUL
 
         if problems:
             trace.append({"call": len(trace) + 1, "seconds": seconds, "result": "invalid", "problems": problems})
+            if kept:  # the nutrition retry broke the plan: the plan we already had stays
+                return _result("ok", request, prompt_version, trace, catalogue, *kept[:3])
             if repairs_left == 0:
                 return _result("invalid_plan", request, prompt_version, trace, catalogue)
             repairs_left -= 1
@@ -100,13 +119,26 @@ def generate_plan(request: PlanRequest, call_model, prompt_version: str = DEFAUL
 
         if not plan.feasible:
             trace.append({"call": len(trace) + 1, "seconds": seconds, "result": "model_says_infeasible"})
+            if kept:
+                return _result("ok", request, prompt_version, trace, catalogue, *kept[:3])
             return _result("infeasible", request, prompt_version, trace, catalogue, plan=plan, lines=lines, check=check)
 
         lines = build_shopping_list(plan.needs, allowed, request.already_have)
         check = check_budget(lines, round(request.budget_eur * 100))
-        trace.append({"call": len(trace) + 1, "seconds": seconds, "result": "priced", "total_cents": check.total_cents})
+        gaps = nutrition_gaps(plan, request, catalogue)
+        trace.append({"call": len(trace) + 1, "seconds": seconds, "result": "priced", "total_cents": check.total_cents, "nutrition_gaps": len(gaps)})
 
+        if kept:  # this reply answers the nutrition retry: keep whichever plan misses fewer targets, within budget
+            if check.within_budget and len(gaps) < len(kept[3]):
+                return _result("ok", request, prompt_version, trace, catalogue, plan, lines, check)
+            trace[-1]["kept"] = False  # priced but not shown: the first plan stays
+            return _result("ok", request, prompt_version, trace, catalogue, *kept[:3])
         if check.within_budget:
+            if gaps and nutrition_left:
+                nutrition_left -= 1
+                kept = (plan, lines, check, gaps)
+                messages.append({"role": "user", "content": _nutrition_message(gaps, allowed)})
+                continue
             return _result("ok", request, prompt_version, trace, catalogue, plan, lines, check)
         if cheaper_left == 0:
             return _result("over_budget", request, prompt_version, trace, catalogue, plan, lines, check)

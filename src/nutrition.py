@@ -45,3 +45,37 @@ def meal_nutrition(ingredients, servings: int, catalogue: dict, table: dict = No
         kcal, protein = kcal + k, protein + p
     servings = max(servings, 1)
     return {"kcal": round(kcal / servings), "protein_g": round(protein / servings)}
+
+
+def nutrition_gaps(plan, request, catalogue: dict) -> list:
+    """Lunches and dinners that miss the user's portion or protein target, as
+    counted by code, each with what to change. Breakfast is not checked: the
+    targets are for main meals."""
+    from src.plan import PORTIONS, PROTEIN_TARGETS
+
+    kcal_range, protein_min = PORTIONS[request.portion], PROTEIN_TARGETS[request.protein]
+    if not kcal_range and not protein_min:
+        return []
+    table = load_nutrition()
+    gaps = []
+    for meal in plan.meals:
+        if meal.meal == "breakfast":
+            continue
+        counted = meal_nutrition(meal.ingredients, meal.servings, catalogue, table)
+        misses = []
+        if protein_min and counted["protein_g"] < protein_min:
+            misses.append(f"{counted['protein_g']} g of protein, needs at least {protein_min} g: add protein")
+        if kcal_range and counted["kcal"] < kcal_range[0]:
+            misses.append(f"{counted['kcal']} kcal, needs at least {kcal_range[0]}: bigger portion")
+        if kcal_range and kcal_range[1] and counted["kcal"] > kcal_range[1]:
+            misses.append(f"{counted['kcal']} kcal, needs at most {kcal_range[1]}: smaller portion")
+        if misses:
+            gaps.append(f"day {meal.day} {meal.meal} ({meal.recipe_name}): " + "; ".join(misses))
+    return gaps
+
+
+def protein_sources(allowed: dict, limit: int = 8) -> list:
+    """The richest protein sources this user may eat in this shop, best first."""
+    table = load_nutrition()
+    rich = [(table[i][2], i) for i in allowed if i in table and table[i][2] >= (6 if table[i][0] == "piece" else 10)]
+    return [ingredient_id for _, ingredient_id in sorted(rich, reverse=True)[:limit]]

@@ -53,7 +53,8 @@ def preference_values(request: PlanRequest) -> dict:
     protein = PROTEIN_TARGETS[request.protein]
     return {
         "styles": ", ".join(request.styles) or "no preference",
-        "portion": f"{request.portion}: {portion[0]} to {portion[1]} kcal per serving" if portion else "no preference",
+        "portion": (f"{request.portion}: {portion[0]} to {portion[1]} kcal per serving" if portion and portion[1]
+                    else f"{request.portion}: at least {portion[0]} kcal per serving" if portion else "no preference"),
         "protein": f"at least {protein} g of protein per serving" if protein else "no preference",
         "equipment": ", ".join(sorted(e.replace("_", " ") for e in request.equipment)) or "a normal kitchen (hob, oven, microwave)",
     }

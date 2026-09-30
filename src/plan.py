@@ -26,7 +26,7 @@ MAX_PER_SERVING = {"g": 1000, "ml": 1000, "ud": 6}
 STYLES = ("healthy", "quick", "comfort", "world", "mediterranean", "batch")
 MAX_STYLES = 3
 # Calories per serving for lunch and dinner. "auto" lets the model decide.
-PORTIONS = {"auto": None, "light": (400, 600), "balanced": (600, 800), "hearty": (800, 1000)}
+PORTIONS = {"auto": None, "light": (400, 600), "balanced": (600, 800), "hearty": (800, None)}  # None: no upper limit
 # Minimum grams of protein per serving for lunch and dinner.
 PROTEIN_TARGETS = {"auto": 0, "high": 30, "extra": 40, "max": 50}
 EQUIPMENT = ("hob", "oven", "microwave", "air_fryer", "slow_cooker")

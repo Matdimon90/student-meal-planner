@@ -103,7 +103,7 @@ The professor may ask any of us anything. Each of us prepares **their own answer
 
 **Matteo** — why the pivot away from the fridge photo; why ingredient ids instead of free text; why the pricing is in integer cents; why one repair call and not three; what the `x1` experiment proves about LLMs and numbers.
 
-**Oscar** — why v6 changes only the examples block and not the rules; why `swap_meal()` forces the day, the slot and the servings instead of trusting the reply; why the whole plan is re-priced after a one-meal swap and not just the new meal; what the swap prompt shows the model about the other meals, and what it buys us.
+**Oscar** — why v6 changes only the examples block and not the rules; why `swap_meal()` forces the day, the slot and the servings instead of trusting the reply; why the whole plan is re-priced after a one-meal swap and not just the new meal; what the swap prompt shows the model about the other meals, and what it buys us; why the Stripe pass needs no database and no webhook, and why the access code still works next to it.
 
 **Tom** — what the six rubric criteria measure and why the score is computed on the **first** reply; what the reuse ratio and the leftovers share mean; what the ablation runs found, and whether our written predictions were right; how the equipment check tells oven roasting from pan roasting.
 

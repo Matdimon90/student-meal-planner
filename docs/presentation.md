@@ -72,7 +72,7 @@ Not "here is our prompt". Seven versions, each one answering a measured failure 
 
 Then the two numbers that make the point: v5 **lowered** the score, and x1 (let the model add up the bill) scored the same 58/60 on the rubric while being wrong by 17 EUR on average — a JSON field that looks like arithmetic and is not. That is the strongest slide in the project; it justifies the whole architecture.
 
-If the ablations (x2, x3) have been run by then, finish with them: what each rule is worth, measured.
+Finish with the ablations: without the reuse rule (x2) the score drops to 55/60, without the honesty rule (x3) to 53/60. What each rule is worth, measured.
 
 ## 6. Challenges and failures
 

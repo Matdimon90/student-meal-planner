@@ -6,7 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
-- Optional Stripe payment: a pass bought through Stripe Checkout unlocks plan generation for 30 days (`/api/checkout`, `src/payment.py`). Off unless `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` are set; the access code keeps working.
+- Optional Stripe payment: a pass bought through Stripe Checkout unlocks plan generation for 30 days (`/api/checkout`, `src/payment.py`). Off unless `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` are set; the access code keeps working (#60).
+- Layout for computer screens 1024px wide and more: text beside the dishes on the landing, tabs at the top, the week beside the budget summary. Phones are unchanged (#71).
+
+### Fixed
+- Recipes that roast (`roast`, `asar` and their forms) are now treated as needing an oven, except when they roast in a pan, skillet, griddle or plancha (#63).
+- Roasting in a hot, large or non-stick pan no longer asks for an oven: one or two words may sit before the pan (#77).
+- Outdated statements in `docs/prompt-log.md` and `docs/failures.md`: the model speed, the v4 re-run and the files kept out of Git (#68).
+- The README and decision 8 said every pull request was reviewed; #1 to #36 were not, and the failures log now says so (#73).
+- README, `CONTRIBUTING.md` and the design handoff updated for Stripe, ChatGPT and the test count (#75).
+- Decision 12 in `docs/decisions.md`: why a paid pass sits next to the access code (#76).
 
 ## [1.1.0] — 2026-09-30
 

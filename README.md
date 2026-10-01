@@ -96,6 +96,7 @@ src/
   catalogue.py          load prices, filter by diet / allergies / dislikes (no AI)
   nutrition.py          calories and protein per plate, missed targets     (no AI)
   photos.py             picks a dish photo from the recipe name            (no AI)
+  payment.py            Stripe pass: opens Checkout, checks a session was paid (no AI)
   plan.py               request rules, parsing and checking the model's answer (no AI)
   prompting.py          loads a prompt version and fills it in
   llm.py                the only file that calls the model API

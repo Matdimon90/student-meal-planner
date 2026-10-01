@@ -53,7 +53,7 @@ What each of us owns, checkable with `git log --author=`:
 | | Owns | Where to look |
 | --- | --- | --- |
 | Matteo | Catalogue, shopping maths, planning pipeline, web API and page, prompt v1–v5, the x1 experiment, real supermarkets and cross-shop comparison, v6 and ablation results in the log, changelog, step-by-step form, dish photos and prompt v7 | PRs #1–#19, #35, #36, #55–#58 |
-| Oscar | Prompt v6, single-meal swap (pipeline, API, button, tests), repo hygiene: licence, changelog, issue templates, CI badge | PRs #37, #38, #40, #41, #42 |
+| Oscar | Prompt v6, single-meal swap (pipeline, API, button, tests), repo hygiene: licence, changelog, issue templates, CI badge, ablation prompts x2 and x3, this presentation plan, the Stripe pass, the computer layout, documentation updates | PRs #37, #38, #40–#42, #50–#53, #60, #71, #75, #76 |
 | Tom | The evaluation runs that close the log: v6 scores, the x2/x3 ablations, the model comparison | PR to come — see below |
 
 ## 5. Prompt engineering — the story to tell

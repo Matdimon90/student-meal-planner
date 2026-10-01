@@ -110,6 +110,5 @@ The professor may ask any of us anything. Each of us prepares **their own answer
 ## Before the defence — checklist
 
 - [ ] Merge or close the open pull requests, each with a real review from someone else.
-- [ ] Deploy and put the Vercel link in the README (it currently says "link, to add"), or remove the promise.
 - [ ] `python3 -m pytest` green, and one real plan generated in the last hours to be sure the API key still works.
 - [ ] Each of us has read the whole repository once, not only their own files.

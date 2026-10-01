@@ -49,3 +49,7 @@ The first page was one long form. We replaced it with one question per screen (s
 ## 11. Dish photos from a library, not generated
 
 Each meal card shows a photo, like the apps we took the idea from. Generating one image per recipe would cost money and seconds on every plan, and could show a dish that looks nothing like what the student will cook. We chose 48 free photos from Unsplash (credits in `public/img/dishes/CREDITS.md`) and let the code pick one from the recipe name and ingredients (`src/photos.py`). The photo shows the kind of dish, not the exact recipe, and the footer says so.
+
+## 12. A paid pass next to the access code
+
+The access code of decision 7 protects our model budget, but it means only people we know can use the site. We wanted a site that could really work as a business: since #60, someone without the code can buy a Stripe pass and generate plans for 30 days; out of test mode, that payment would cover the model calls. Thirty days because a monthly pass is the usual length (`STRIPE_PASS_DAYS` changes it). As in decision 6, there is no database: the browser keeps the id of its Stripe Checkout session and sends it with every plan, and the server asks Stripe whether that session was paid (`src/payment.py`). No webhook and no card data on our side. Stripe stays in test mode, and the access code still works for the team and the teacher.

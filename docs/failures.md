@@ -88,6 +88,13 @@ needs a pull request and one approval.
 web editor, choose "Create a new branch for this commit and start a pull request", and
 write a message that says what changed.
 
+### Pull requests merged without a review (#1 to #36)
+
+- **What happened.** `CONTRIBUTING.md` says a teammate reviews every pull request and nobody merges their own without a review. Pull requests #1 to #36 were opened and merged by the same person, with no review on GitHub. The first reviews are on #37.
+- **Why.** The reason is not recorded.
+- **Fix.** `main` is protected: a pull request needs an approval from someone other than its author and green tests before it can be merged. From #37 on, every pull request was approved by a teammate.
+- **Learned.** A rule that nothing enforces is only a wish. And a review only counts if the reviewer reads the diff: an approval with no comment shows nothing about what was checked.
+
 ### Our first merge conflict: two branches, the same table row
 
 - **What happened.** `prompt/experiment-model-total` (the x1 experiment) had been open for a while. Meanwhile v5 was merged into `main`. Bringing `main` back into the branch stopped on `CONFLICT (content): Merge conflict in prompts/README.md`. `docs/prompt-log.md` merged by itself even though both sides had also written in it.

@@ -40,7 +40,9 @@ How we work together: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | Git, GitHub (issues, branches, pull requests, reviews) | Collaboration and project history |
 | Vercel | Hosting |
 | Unsplash | Dish photos, free licence, credits in `public/img/dishes/CREDITS.md` |
+| Stripe (test mode) | Optional: a 30-day pass that unlocks plan generation, see "Payment" |
 | Claude (assistant) | Coding assistant, see "AI usage" |
+| ChatGPT (assistant) | Tom's assistant for his documentation and fix pull requests |
 
 ## Installation
 

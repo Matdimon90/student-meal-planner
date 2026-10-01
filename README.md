@@ -159,6 +159,6 @@ How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md
 
 ## Future improvements
 
-- More supermarkets (Dia is already in the same dataset) and automatic weekly price refresh.
+- A third supermarket (the same OpenCesta release has Ahorramás, see `data/README.md`) and automatic weekly price refresh.
 - Carry leftovers from one week to the next.
 - More dish photos, so more recipes get a picture close to what is on the plate.

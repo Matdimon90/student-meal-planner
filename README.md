@@ -71,7 +71,7 @@ uvicorn app:app --reload
 
 Open http://127.0.0.1:8000, press "Plan my week", answer the questions and press "Generate my plan". A plan takes up to a minute.
 
-**Online version.** https://student-meal-planner-two.vercel.app — it asks for an access code, because every plan costs us model calls (ask the team for it). Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
+**Online version.** https://student-meal-planner-two.vercel.app — every plan costs us model calls, so generating one needs either the access code (ask the team for it) or a 30-day pass bought with Stripe in test mode (see "Payment" below). Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
 
 ## Payment (Stripe, optional)
 

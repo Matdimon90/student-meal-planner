@@ -1,5 +1,7 @@
 # Student Meal Planner — design handoff
 
+> **Note.** This file describes the design of version 1.0. Since version 1.1.0 the page starts with the step-by-step form instead: see `CHANGELOG.md`, section [1.1.0], and `docs/images/onboarding.webp`.
+
 Source of truth for how the web page should look and behave. The interactive mockups live in the Claude Design canvas "Student Meal Planner" (13 artboards); this folder holds everything a coding session needs to apply them to `public/index.html`.
 
 Contents of `docs/design/`:

@@ -40,9 +40,9 @@ How we work together: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | Git, GitHub (issues, branches, pull requests, reviews) | Collaboration and project history |
 | Vercel | Hosting |
 | Unsplash | Dish photos, free licence, credits in `public/img/dishes/CREDITS.md` |
-| Stripe (test mode) | Optional 30-day pass through Stripe Checkout |
+| Stripe (test mode) | Optional: a 30-day pass that unlocks plan generation, see "Payment" |
 | Claude (assistant) | Coding assistant, see "AI usage" |
-| ChatGPT (assistant) | Coding assistant for some of Tom's pull requests, see "AI usage" |
+| ChatGPT (assistant) | Tom's assistant for his documentation and fix pull requests |
 
 ## Installation
 
@@ -71,7 +71,7 @@ uvicorn app:app --reload
 
 Open http://127.0.0.1:8000, press "Plan my week", answer the questions and press "Generate my plan". A plan takes up to a minute.
 
-**Online version.** https://student-meal-planner-two.vercel.app — every plan costs us model calls, so generating one needs either the access code (ask the team for it) or a 30-day pass bought through Stripe in test mode (test card `4242 4242 4242 4242`, no real money). See "Payment" below. Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
+**Online version.** https://student-meal-planner-two.vercel.app — every plan costs us model calls, so generating one needs either the access code (ask the team for it) or a 30-day pass bought with Stripe in test mode (see "Payment" below). Every merge into `main` is deployed automatically by Vercel (`vercel.json`).
 
 ## Payment (Stripe, optional)
 
@@ -100,6 +100,7 @@ src/
   plan.py               request rules, parsing and checking the model's answer (no AI)
   prompting.py          loads a prompt version and fills it in
   llm.py                the only file that calls the model API
+  payment.py            the only file that talks to Stripe (optional pass)
   planner.py            the pipeline that ties everything together
 prompts/                one file per prompt version (v1 to v7), the ablations, the swap prompts + README
 data/                   price snapshots, our ingredient list, nutrition values, source and limits
@@ -144,7 +145,7 @@ What works today, end to end:
 - **Swap one meal** without regenerating the week: the slot and the servings are forced by the code, the new meal is validated like a fresh plan, and the whole basket is priced again.
 - **English and Spanish**, recipes included.
 - **The prompt is measured, not felt.** Seven versions scored on the same rubric and the same 10 cases; v4, v6 and the shipped one (v7) all score 58/60. Two ablations (v3 with one rule removed) measure what a single rule is worth. The full history, including the version that scored *lower* than the one before it, is in [`docs/prompt-log.md`](docs/prompt-log.md).
-- **193 automated tests** (`python3 -m pytest`, no API key needed: the model is faked) and they run on every pull request.
+- **189 automated tests** (`python3 -m pytest`, no API key needed: the model is faked) and they run on every pull request.
 
 How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md).
 
@@ -159,6 +160,6 @@ How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md
 
 ## Future improvements
 
-- A third supermarket (Ahorramás is already in the same dataset, see `data/README.md`) and automatic weekly price refresh.
+- A third supermarket (the same OpenCesta release has Ahorramás, see `data/README.md`) and automatic weekly price refresh.
 - Carry leftovers from one week to the next.
 - More dish photos, so more recipes get a picture close to what is on the plate.

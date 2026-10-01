@@ -97,7 +97,7 @@ The professor may ask any of us anything. Each of us prepares **their own answer
 **Everyone must be able to answer:**
 
 - What does the code do that the model is not allowed to do, and why? (Answer: validate, price, decide the budget verdict — `docs/ai-approach.md`.)
-- Why is v4 shipped and not v5, which is newer? (Because v5 measured 52/60 against 58/60. Newer is not better; we have the numbers.)
+- Why did v4 stay shipped after v5, which was newer? (Because v5 measured 52/60 against 58/60. Newer is not better; we have the numbers. v7 replaced v4 only once it matched its 58/60.)
 - What would happen if this rule were removed from the prompt? (That is exactly x2 and x3 in `prompts/`, with our predictions written before the run.)
 - Why is there an `outputs/` folder with almost nothing committed in it? (Runs are ignored by Git, only `.gitkeep` is kept; the interesting outputs are quoted in the log.)
 

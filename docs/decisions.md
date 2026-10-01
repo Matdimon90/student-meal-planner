@@ -36,7 +36,7 @@ Each plan costs real money in model calls. When `ACCESS_CODE` is set on the serv
 
 ## 8. How we used AI to build this
 
-Code was written with Claude as a coding assistant, in small slices. Each slice went through a branch, a pull request and a review by a teammate who had to understand it before approving. Prompt experiments were run and written up by us.
+Code was written with AI coding assistants, in small slices: Claude for most of the project, ChatGPT for some of Tom's pull requests. Each slice went through a branch and a pull request. Pull requests #1 to #36 were merged without a review, although our own rules asked for one. From #37 on, each one was approved by a teammate other than its author, and since `main` is protected nothing can be merged without that approval (see [`failures.md`](failures.md), "Pull requests merged without a review"). Prompt experiments were run and written up by us.
 
 ## 9. Pieces or grams: a problem we moved from the prompt to the code
 
@@ -49,3 +49,7 @@ The first page was one long form. We replaced it with one question per screen (s
 ## 11. Dish photos from a library, not generated
 
 Each meal card shows a photo, like the apps we took the idea from. Generating one image per recipe would cost money and seconds on every plan, and could show a dish that looks nothing like what the student will cook. We chose 48 free photos from Unsplash (credits in `public/img/dishes/CREDITS.md`) and let the code pick one from the recipe name and ingredients (`src/photos.py`). The photo shows the kind of dish, not the exact recipe, and the footer says so.
+
+## 12. A paid pass next to the access code
+
+The access code of decision 7 protects our model budget, but it means only people we know can use the site. We wanted a site that could really work as a business: since #60, someone without the code can buy a Stripe pass and generate plans for 30 days; out of test mode, that payment would cover the model calls. Thirty days because a monthly pass is the usual length (`STRIPE_PASS_DAYS` changes it). As in decision 6, there is no database: the browser keeps the id of its Stripe Checkout session and sends it with every plan, and the server asks Stripe whether that session was paid (`src/payment.py`). No webhook and no card data on our side. Stripe stays in test mode, and the access code still works for the team and the teacher.

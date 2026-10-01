@@ -96,6 +96,7 @@ src/
   catalogue.py          load prices, filter by diet / allergies / dislikes (no AI)
   nutrition.py          calories and protein per plate, missed targets     (no AI)
   photos.py             picks a dish photo from the recipe name            (no AI)
+  payment.py            Stripe pass: opens Checkout, checks a session was paid (no AI)
   plan.py               request rules, parsing and checking the model's answer (no AI)
   prompting.py          loads a prompt version and fills it in
   llm.py                the only file that calls the model API
@@ -115,7 +116,7 @@ outputs/                evaluation results (generated, not committed)
 
 **Prompt engineering.** Seven prompt versions (zero-shot → structured output → constraints and role separation → few-shot → two written from our own results → the user's preferences), scored with the same rubric on the same 10 test cases, including an impossible budget, a sycophancy trap and a prompt injection. Plus experiments that answer a question rather than improve the score: can the model add up the bill itself (no, it is wrong by 17 EUR on average), and what each rule is actually worth when we remove it. Scores and what we learned: [`docs/prompt-log.md`](docs/prompt-log.md).
 
-**In development.** Code was written with Claude as a coding assistant, in small slices. Every slice went through a branch, a pull request and a review by a teammate who had to understand it before approving. We ran and wrote up the prompt experiments ourselves.
+**In development.** Code was written with AI coding assistants, in small slices: Claude for most of the project, ChatGPT for some of Tom's pull requests. Every slice went through a branch and a pull request. Pull requests #1 to #36 were merged by their author without a review; from #37 on, each one was approved by someone other than its author, and `main` now requires it. We ran and wrote up the prompt experiments ourselves.
 
 ## Main challenges
 

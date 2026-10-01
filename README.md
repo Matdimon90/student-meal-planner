@@ -99,6 +99,7 @@ src/
   plan.py               request rules, parsing and checking the model's answer (no AI)
   prompting.py          loads a prompt version and fills it in
   llm.py                the only file that calls the model API
+  payment.py            the only file that talks to Stripe (optional pass)
   planner.py            the pipeline that ties everything together
 prompts/                one file per prompt version (v1 to v7), the ablations, the swap prompts + README
 data/                   price snapshots, our ingredient list, nutrition values, source and limits

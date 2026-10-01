@@ -37,7 +37,7 @@ Do not demo on the deployed site unless the Vercel link is live and the access c
 
 ## 3. The journey
 
-Fridge-photo recognition → meal planning under a budget (`docs/decisions.md`, point 1). Then: catalogue and shopping maths in code (PR #1–#5), the planning pipeline with repair and cheaper retries (#7), the web API and page (#8, #9), prompt versions v1 to v4 with an evaluation script (#6, #10), then one prompt version per measured result (#14–#19), real supermarkets and cross-shop pricing (#35, #36), and single-meal swapping (#41). The repository is the order we actually did it in.
+Fridge-photo recognition → meal planning under a budget (`docs/decisions.md`, point 1). Then: catalogue and shopping maths in code (PR #1–#5), the planning pipeline with repair and cheaper retries (#7), the web API and page (#8, #9), prompt versions v1 to v4 with an evaluation script (#6, #10), then one prompt version per measured result (#14–#19), real supermarkets and cross-shop pricing (#35, #36), single-meal swapping (#41), the step-by-step form with prompt v7 and dish photos (#58), the Stripe pass (#60), the roasting check (#63) and the computer layout (#71). The repository is the order we actually did it in.
 
 ## 4. Git and collaboration — the honest version
 

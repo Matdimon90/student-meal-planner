@@ -49,6 +49,11 @@ NOT_NEEDED = [
     r"\b(in\s+|en\s+)?(an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?" + _APPLIANCE + r"\s+(or|o)\b",
     r"\b(or|o)\s+(in\s+|en\s+)?(an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?" + _APPLIANCE,
     r"\bno[- ]bake\b", r"\bdutch oven\b", r"\bbaked beans\b",
+    # Remove only the ambiguous roasting word when the same clause specifies
+    # a hob method. Keep explicit oven words and other cooking clauses intact.
+    r"\bpan[- ]roast(?:s|ed|ing)?\b",
+    r"\b(?:dry[- ])?roast(?:s|ed|ing)?\b(?=[^.!?;,\n]*\b(?:in|on)\s+(?:a\s+|the\s+)?(?:frying\s+)?(?:pan|skillet|griddle)\b)",
+    r"\basa(?:r|d[oa]s?)?\b(?=[^.!?;,\n]*\b(?:a\s+la\s+plancha|en\s+(?:una\s+|la\s+)?sart[eé]n)\b)",
 ]
 
 
@@ -142,7 +147,8 @@ def equipment_problems(meal, equipment: frozenset) -> list:
     """Appliances a recipe mentions that the user said they do not have."""
     if not equipment:  # the user did not say: a normal kitchen, nothing to check
         return []
-    text = " ".join((meal.recipe_name,) + tuple(meal.steps)).lower()
+    # Keep the title and individual steps separate, even without punctuation.
+    text = ". ".join((meal.recipe_name,) + tuple(meal.steps)).lower()
     for pattern in NOT_NEEDED:
         text = re.sub(pattern, " ", text)
     return [

@@ -67,7 +67,7 @@ Not "here is our prompt". Six versions, each one answering a measured failure of
 | v3 | Prices, 9 rules, honesty rule, notes isolated | 52/60 | The model cannot respect a budget it cannot see. |
 | v4 | Two worked examples | 58/60 | The example did what the rule could not (it stopped giving up 2 EUR over budget). **Shipped.** |
 | v5 | More rules for variety | 52/60 | More rules is not more control: rules compete, the model obeys the newest. |
-| v6 | Same rules, a second example on another base | to run | Attack the problem with the lever that worked, not the one that backfired. |
+| v6 | Same rules, a second example on another base | 58/60 | Attack the problem with the lever that worked, not the one that backfired. Same score as v4, but the menu did not get more varied. |
 
 Then the two numbers that make the point: v5 **lowered** the score, and x1 (let the model add up the bill) scored the same 58/60 on the rubric while being wrong by 17 EUR on average — a JSON field that looks like arithmetic and is not. That is the strongest slide in the project; it justifies the whole architecture.
 

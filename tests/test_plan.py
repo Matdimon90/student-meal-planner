@@ -1,6 +1,7 @@
 """Tests for request validation and for checking the model's answer."""
 
 import json
+from types import SimpleNamespace
 
 import pytest
 
@@ -9,6 +10,7 @@ from src.plan import (
     PlanFormatError,
     PlanRequest,
     RequestError,
+    equipment_problems,
     parse_plan,
     validate_plan,
     validate_request,
@@ -289,6 +291,31 @@ def test_the_problem_message_reads_well():
     request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
     problems = problems_for(make_reply([baked_meal()]), request)
     assert any("needs an oven" in p for p in problems)
+
+
+@pytest.mark.parametrize("step, equipment, expected", [
+    ("Bake in the oven or air fryer for 15 minutes.", {"hob", "air_fryer"}, []),
+    ("Cook in the microwave or oven for 5 minutes.", {"hob", "microwave"}, []),
+    ("Cook in the oven or microwave for 5 minutes.", {"hob", "microwave"}, []),
+    ("Cook in the oven or microwave for 5 minutes.", {"hob"}, ["oven or microwave"]),
+    ("Hornea en el horno o en la freidora de aire 15 minutos.", {"hob", "air_fryer"}, []),
+    ("No oven or microwave needed.", {"hob"}, []),
+])
+def test_appliances_offered_as_alternatives_need_only_one(step, equipment, expected):
+    meal = SimpleNamespace(recipe_name="Test", steps=(step,))
+    assert equipment_problems(meal, frozenset(equipment)) == expected
+
+
+def test_alternatives_do_not_hide_another_appliance():
+    meal = SimpleNamespace(recipe_name="Test", steps=("Bake in the oven or air fryer.", "Microwave the sauce."))
+    assert equipment_problems(meal, frozenset({"hob", "air_fryer"})) == ["microwave"]
+
+
+def test_the_problem_names_both_alternatives():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": ["Cook in the oven or air fryer for 15 minutes."]}
+    problems = problems_for(make_reply([meal]), request)
+    assert problems == ["MISSING_EQUIPMENT: day 1 dinner (Rice with tomato) needs an oven or air fryer, which the user does not have"]
 
 
 # --- minutes and tags (prompt v7) ----------------------------------------------

@@ -15,6 +15,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Outdated statements in `docs/prompt-log.md` and `docs/failures.md`: the model speed, the v4 re-run and the files kept out of Git (#68).
 - The README and decision 8 said every pull request was reviewed; #1 to #36 were not, and the failures log now says so (#73).
 - README, `CONTRIBUTING.md` and the design handoff updated for Stripe, ChatGPT and the test count (#75).
+- Decision 12 in `docs/decisions.md`: why a paid pass sits next to the access code (#76).
 
 ## [1.1.0] — 2026-09-30
 

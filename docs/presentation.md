@@ -46,7 +46,7 @@ Show the network graph, not a slide. Branch per feature, pull request for every 
 Two things we must say before we are asked, because they are visible in one click:
 
 - **The commits are not evenly spread.** Matteo has around 83 of them, Oscar around 32, Tom 14. We should say what each of us owns rather than pretend otherwise, and say what we changed in the second half of the project.
-- **Most of the early pull requests were merged without a review**, although `CONTRIBUTING.md` line 15 says nobody merges their own pull request without one. Reviews only really start at #37. That is a real process failure and it is more convincing to name it than to hope nobody clicks.
+- **Most of the early pull requests were merged without a review**, although `CONTRIBUTING.md` line 15 says nobody merges their own pull request without one. Reviews only really start at #37, and `main` now requires one. That is a real process failure and it is more convincing to name it than to hope nobody clicks.
 
 What each of us owns, checkable with `git log --author=`:
 

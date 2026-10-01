@@ -80,7 +80,7 @@ Pick three from `docs/failures.md` and the log: the `temperature` parameter that
 
 ## 7. Technical and creative choices
 
-The `docs/ai-approach.md` table, one line at a time: for every task, who does it and why. Then the pipeline diagram: at most three model calls (one answer, one repair, one cheaper retry), no agent, no tools — the code decides what happens next. Then the three failure modes we defend against by construction (hallucination, sycophancy, prompt injection) and the one we only mitigate (context window: 14 days maximum, one catalogue line per ingredient).
+The `docs/ai-approach.md` table, one line at a time: for every task, who does it and why. Then the pipeline diagram: at most four model calls (one answer, one repair, one cheaper retry, one nutrition retry), no agent, no tools — the code decides what happens next. Then the three failure modes we defend against by construction (hallucination, sycophancy, prompt injection) and the one we only mitigate (context window: 14 days maximum, one catalogue line per ingredient).
 
 ## 8. Lessons learned — one sentence each, prepared
 

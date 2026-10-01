@@ -36,7 +36,7 @@ MAX_MINUTES = 240
 # Words that show a recipe needs an appliance, in English and Spanish. The hob
 # is not checked: "pan" or "boil" are too common to tell it apart reliably.
 EQUIPMENT_WORDS = {
-    "oven": r"\b(oven|bake[ds]?|baking|horno|hornea\w*|gratin\w*)\b",
+    "oven": r"\b(oven|bake[ds]?|baking|roast(?:s|ed|ing)?|horno|hornea\w*|asa(?:r|d[oa]s?)?|gratin\w*)\b",
     "microwave": r"\b(microwave\w*|microondas)\b",
     "air_fryer": r"\b(air[- ]?fryer|airfryer|freidora de aire)\b",
     "slow_cooker": r"\b(slow[- ]?cooker|olla lenta|crock[- ]?pot)\b",

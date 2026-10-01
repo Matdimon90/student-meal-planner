@@ -88,7 +88,7 @@ Not improvised. For example: measure before tuning, because our own v5 felt bett
 
 ## 9. Next steps
 
-Accepting pieces as well as grams for produce everywhere, timing and scoring Sonnet on the same 10 cases, and the user choice we concluded was needed instead of a prompt rule: "cheapest" or "varied".
+Timing and scoring Sonnet on the same 10 cases, and the user choice we concluded was needed instead of a prompt rule: "cheapest" or "varied".
 
 ## Individual questions (guidelines §17)
 

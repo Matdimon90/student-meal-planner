@@ -179,6 +179,76 @@ def test_oven_recipe_is_reported_when_the_user_has_no_oven():
     assert any(p.startswith("MISSING_EQUIPMENT") and "oven" in p for p in problems)
 
 
+@pytest.mark.parametrize("step", [
+    "Roast the potatoes at 200°C for 30 minutes.",
+    "Serve the roasted potatoes.",
+    "Continue roasting the potatoes for 10 minutes.",
+    "Asar las verduras a 200 °C durante 30 minutos.",
+    "Asa el pollo a 200 °C durante 40 minutos.",
+    "Sirve el pollo asado.",
+])
+@pytest.mark.parametrize("has_oven", [False, True])
+def test_roasting_verbs_require_an_available_oven(step, has_oven):
+    equipment = frozenset({"hob", "oven"} if has_oven else {"hob"})
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=equipment)
+    meal = {**make_meal(), "steps": [step]}
+    problems = problems_for(make_reply([meal]), request)
+    if has_oven:
+        assert problems == []
+    else:
+        assert len(problems) == 1
+        assert problems[0].startswith("MISSING_EQUIPMENT")
+        assert "needs an oven" in problems[0]
+
+
+def test_asa_inside_another_word_does_not_require_an_oven():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": ["Prepara el arroz en casa."]}
+    assert problems_for(make_reply([meal]), request) == []
+
+
+@pytest.mark.parametrize("step", [
+    "Dry-roast the spices in a pan for 1 minute.",
+    "Roast the spices in a frying pan for 1 minute.",
+    "Pan-roast the vegetables for 5 minutes.",
+    "Roast the vegetables on a griddle.",
+    "Asar las verduras en una sartén.",
+    "Asa el pollo a la plancha.",
+    "Sirve las verduras asadas a la plancha.",
+])
+def test_pan_and_plancha_roasting_does_not_require_an_oven(step):
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": [step]}
+    assert problems_for(make_reply([meal]), request) == []
+
+
+@pytest.mark.parametrize("steps", [
+    ["Dry-roast the spices in a pan.", "Roast the potatoes at 200°C."],
+    ["Roast the potatoes at 200°C", "Dry-roast the spices in a pan"],
+    ["Roast the potatoes at 200°C; dry-roast the spices in a pan."],
+    ["Roast the potatoes at 200°C. Dry-roast the spices in a pan."],
+    ["Roast the potatoes at 200°C, then dry-roast the spices in a pan."],
+    ["Roast the vegetables in a pan and finish in the oven."],
+    ["Asa el pollo en el horno y las verduras a la plancha."],
+])
+def test_pan_exception_does_not_hide_a_separate_or_explicit_oven_requirement(steps):
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": steps}
+    problems = problems_for(make_reply([meal]), request)
+    assert len(problems) == 1
+    assert problems[0].startswith("MISSING_EQUIPMENT")
+    assert "needs an oven" in problems[0]
+
+
+def test_pan_exception_keeps_other_appliance_checks():
+    request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
+    meal = {**make_meal(), "steps": ["Dry-roast the spices in a pan, then microwave the rice."]}
+    problems = problems_for(make_reply([meal]), request)
+    assert len(problems) == 1
+    assert problems[0].startswith("MISSING_EQUIPMENT")
+    assert "needs a microwave" in problems[0]
+
+
 def test_spanish_steps_are_checked_too():
     request = PlanRequest(budget_eur=20, people=2, days=1, meals=("dinner",), equipment=frozenset({"hob"}))
     meal = baked_meal(["Calienta el horno.", "Calienta las sobras en el microondas."])

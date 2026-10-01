@@ -109,7 +109,6 @@ The professor may ask any of us anything. Each of us prepares **their own answer
 
 ## Before the defence — checklist
 
-- [ ] Run the missing evaluations and paste the rows: v6, x2, x3, and the model comparison (`PLANNER_MODEL=claude-sonnet-5 python3 scripts/evaluate_prompt.py v4`). These are the last empty tables in the log.
 - [ ] Merge or close the open pull requests, each with a real review from someone else.
 - [ ] Deploy and put the Vercel link in the README (it currently says "link, to add"), or remove the promise.
 - [ ] `python3 -m pytest` green, and one real plan generated in the last hours to be sure the API key still works.

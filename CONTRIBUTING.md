@@ -50,4 +50,4 @@ Anchor the comment to a line and give three parts:
 
 ## Using AI to write code
 
-We use Claude as a coding assistant. The rule: the person who opens the pull request must be able to explain every file in it, and the reviewer must actually read it.
+We use AI coding assistants: Claude for most of the project, ChatGPT for Tom's pull requests. The rule: the person who opens the pull request must be able to explain every file in it, and the reviewer must actually read it.

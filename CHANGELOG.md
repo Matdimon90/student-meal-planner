@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 - Optional Stripe payment: a pass bought through Stripe Checkout unlocks plan generation for 30 days (`/api/checkout`, `src/payment.py`). Off unless `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` are set; the access code keeps working. (#60)
+- Layout for computer screens 1024px wide and more: text beside the dishes on the landing, tabs at the top, the week beside the budget summary. Phones are unchanged (#71).
 
 ## [1.1.0] — 2026-09-30
 

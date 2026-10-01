@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Recipes that roast (`roast`, `asar` and their forms) are now treated as needing an oven, except when they roast in a pan, skillet, griddle or plancha (#63).
 - Roasting in a hot, large or non-stick pan no longer asks for an oven: one or two words may sit before the pan (#77).
 - Outdated statements in `docs/prompt-log.md` and `docs/failures.md`: the model speed, the v4 re-run and the files kept out of Git (#68).
+- The README and decision 8 said every pull request was reviewed; #1 to #36 were not, and the failures log now says so (#73).
 
 ## [1.1.0] — 2026-09-30
 

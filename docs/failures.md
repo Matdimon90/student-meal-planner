@@ -99,5 +99,5 @@ write a message that says what changed.
 
 - **What happened.** `[students] DAT32-91_Prompt_Engineering_Git_Project_Guidelines.docx` was saved in the project folder, so `git status` offered to commit it and a `git add -A` staged it into a local commit. We caught it before pushing (`git reset --soft HEAD~1`, unstage the file, commit again), so it never reached the shared history.
 - **Why it matters.** The repository is our work; the teacher's brief is not ours to redistribute, and a binary `.docx` in a Git history cannot be diffed or removed cleanly afterwards.
-- **Fix.** Added to `.gitignore` (`*.docx`, and the brief by name) so the file can stay in the working folder without ever being staged again.
+- **Fix.** Added `*.docx` to `.gitignore`, which covers the brief, so the file can stay in the working folder without ever being staged again.
 - **Learned.** Check what `git add -A` is about to stage. An untracked file in the working folder is one careless `git add` away from being in the history for good. 

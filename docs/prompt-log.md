@@ -42,7 +42,7 @@ The script also prints three numbers for the plans that could be priced. They sh
 | v6 | 2.20 | 1.46 | 45% |
 | v7 | 2.30 | 1.54 | 47% |
 
-Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 6 s per model call.
+Model and settings used for all runs: claude-haiku-4-5-20251001, default settings (the SDK has no temperature parameter), about 10 to 15 s per model call (see "Model comparison" below).
 
 ## v1 — zero-shot baseline
 
@@ -121,7 +121,7 @@ The one remaining failure is the same as in v2 and v3: `big_week` writes `banana
 
 **What we changed next and why.** v4 is the version the app ships with. The next step is v5, written by us from these results, and one experiment that we expect to fail (see below).
 
-**Follow-up (code, not prompt).** After v5 we added an average piece weight to the catalogue for fruit and vegetables and let the validator accept "2 ud" as well as "360 g" for them. The catalogue line in the prompt now reads `banana | Banana | g (1 piece = 180 g)`. Re-running v4 after this change is on the to-do list: we expect `big_week` to pass on the first call and v4 to reach 60/60 without any prompt change, which is the point.
+**Follow-up (code, not prompt).** After v5 we added an average piece weight to the catalogue for fruit and vegetables and let the validator accept "2 ud" as well as "360 g" for them. The catalogue line in the prompt now reads `banana | Banana | g (1 piece = 180 g)`. We re-ran v4 after this change on 2026-09-24 (row "v4 (re-run)" in the scores table): `complete` went from 9/10 to 10/10, but the total stayed at 58/60 because `final` dropped from 10/10 to 9/10 on that run. One run of 10 cases is noisy; see the ablations section below.
 
 ## v5 — varied menu (written by us from the v4 results)
 

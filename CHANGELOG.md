@@ -5,6 +5,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- Optional Stripe payment: a pass bought through Stripe Checkout unlocks plan generation for 30 days (`/api/checkout`, `src/payment.py`). Off unless `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` are set; the access code keeps working.
+
 ## [1.1.0] — 2026-09-30
 
 ### Added

@@ -1,3 +1,4 @@
 fastapi
 anthropic>=1.7
 python-dotenv
+stripe>=10

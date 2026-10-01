@@ -58,16 +58,17 @@ What each of us owns, checkable with `git log --author=`:
 
 ## 5. Prompt engineering — the story to tell
 
-Not "here is our prompt". Six versions, each one answering a measured failure of the one before:
+Not "here is our prompt". Seven versions, each one answering a measured failure of the one before:
 
 | Version | What changed | Score | The lesson |
 | --- | --- | --- | --- |
 | v1 | Zero-shot | 0/60 | Ten different JSON shapes. Format is not a detail. |
 | v2 | Exact JSON format | 40/60 | Format fixed; the failure moved to invented ingredients and budget. |
 | v3 | Prices, 9 rules, honesty rule, notes isolated | 52/60 | The model cannot respect a budget it cannot see. |
-| v4 | Two worked examples | 58/60 | The example did what the rule could not (it stopped giving up 2 EUR over budget). **Shipped.** |
+| v4 | Two worked examples | 58/60 | The example did what the rule could not (it stopped giving up 2 EUR over budget). Shipped until v7. |
 | v5 | More rules for variety | 52/60 | More rules is not more control: rules compete, the model obeys the newest. |
 | v6 | Same rules, a second example on another base | 58/60 | Attack the problem with the lever that worked, not the one that backfired. Same score as v4, but the menu did not get more varied. |
+| v7 | v4 plus the step-by-step form's answers, kcal and protein per ingredient | 58/60 | The only version that uses the user's preferences, at no cost on the rubric. **Shipped.** |
 
 Then the two numbers that make the point: v5 **lowered** the score, and x1 (let the model add up the bill) scored the same 58/60 on the rubric while being wrong by 17 EUR on average — a JSON field that looks like arithmetic and is not. That is the strongest slide in the project; it justifies the whole architecture.
 

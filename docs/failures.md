@@ -97,7 +97,7 @@ write a message that says what changed.
 
 ### Commit messages with a body
 
-- **What happened.** `CONTRIBUTING.md` requires "One line, no body", but at `main` commit `67c1070` an audit found 24 of 127 non-merge commits with more than one non-empty message line. Of these, 21 have a `Co-Authored-By: Claude` line and three have a description: one by Matteo (`3f3a3ff`) and two by Tom (`63ab0b2`, `f0a36a0`).
+- **What happened.** `CONTRIBUTING.md` requires "One line, no body", but at `main` commit `67c1070` an audit found 24 of 127 non-merge commits with more than one non-empty message line. Of these, 21 have a `Co-Authored-By: Claude` line and three have a description: one by Matteo (`3f3a3ff`) and two by Tom (`63ab0b2`, `f0a36a0`). Three more of Tom's web-editor commits, made just after this section was written and merged in #83, kept the description too (`0f99142`, `4473ffa`, `ca408f6`), and two messages there start with a space (`ca408f6`, `2695a44`). At version 1.2.0 that makes 27 of 176 non-merge commits with a body.
 - **Why.** The Claude attribution was added by the coding assistant, and the three browser commits included the editor's extended description. These generated or filled-in fields were kept instead of checking the whole message against our one-line rule.
 - **Fix.** Keep the shared, protected history unchanged. For new commits, use one imperative English line and no body or attribution trailer. In GitHub's editor, replace the suggested message and clear the extended description before committing; in the terminal, use only `git commit -m "..."`.
 - **Learned.** Check the complete commit message, not just its subject. A tool's defaults do not override the repository's contribution rules.

@@ -36,7 +36,7 @@ Each plan costs real money in model calls. When `ACCESS_CODE` is set on the serv
 
 ## 8. How we used AI to build this
 
-Code was written with AI coding assistants, in small slices: Claude for most of the project, ChatGPT for Tom's pull requests. Each slice went through a branch and a pull request. Pull requests #1 to #36 were merged without a review, although our own rules asked for one. From #37 on, each one was approved by a teammate other than its author, and since `main` is protected nothing can be merged without that approval (see [`failures.md`](failures.md), "Pull requests merged without a review"). Prompt experiments were run and written up by us.
+Code was written with AI coding assistants, in small slices: Claude for most of the project, ChatGPT for some of Tom's pull requests. Each slice went through a branch and a pull request. Pull requests #1 to #36 were merged without a review, although our own rules asked for one. From #37 on, each one was approved by a teammate other than its author, and since `main` is protected nothing can be merged without that approval (see [`failures.md`](failures.md), "Pull requests merged without a review"). Prompt experiments were run and written up by us.
 
 ## 9. Pieces or grams: a problem we moved from the prompt to the code
 

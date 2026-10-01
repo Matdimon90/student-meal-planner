@@ -42,7 +42,7 @@ How we work together: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | Unsplash | Dish photos, free licence, credits in `public/img/dishes/CREDITS.md` |
 | Stripe (test mode) | Optional 30-day pass through Stripe Checkout |
 | Claude (assistant) | Coding assistant, see "AI usage" |
-| ChatGPT (assistant) | Coding assistant for Tom's pull requests, see "AI usage" |
+| ChatGPT (assistant) | Coding assistant for some of Tom's pull requests, see "AI usage" |
 
 ## Installation
 
@@ -115,7 +115,7 @@ outputs/                evaluation results (generated, not committed)
 
 **Prompt engineering.** Seven prompt versions (zero-shot → structured output → constraints and role separation → few-shot → two written from our own results → the user's preferences), scored with the same rubric on the same 10 test cases, including an impossible budget, a sycophancy trap and a prompt injection. Plus experiments that answer a question rather than improve the score: can the model add up the bill itself (no, it is wrong by 17 EUR on average), and what each rule is actually worth when we remove it. Scores and what we learned: [`docs/prompt-log.md`](docs/prompt-log.md).
 
-**In development.** Code was written with AI coding assistants, in small slices: Claude for most of the project, ChatGPT for Tom's pull requests. Every slice went through a branch and a pull request. Pull requests #1 to #36 were merged by their author without a review; from #37 on, each one was approved by someone other than its author, and `main` now requires it. We ran and wrote up the prompt experiments ourselves.
+**In development.** Code was written with AI coding assistants, in small slices: Claude for most of the project, ChatGPT for some of Tom's pull requests. Every slice went through a branch and a pull request. Pull requests #1 to #36 were merged by their author without a review; from #37 on, each one was approved by someone other than its author, and `main` now requires it. We ran and wrote up the prompt experiments ourselves.
 
 ## Main challenges
 

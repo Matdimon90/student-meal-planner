@@ -56,6 +56,15 @@ NOT_NEEDED = [
     r"\basa(?:r|d[oa]s?)?\b(?=[^.!?;,\n]*\b(?:a\s+la\s+plancha|en\s+(?:una\s+|la\s+)?sart[eé]n)\b)",
 ]
 
+_ARTICLE = r"(?:an?\s+|the\s+|el\s+|la\s+|un\s+|una\s+)?"
+# Two appliances offered as alternatives: "in the oven or air fryer", "en el microondas
+# o en el horno". The recipe needs one of them, not both. After a negation
+# ("no oven or microwave needed") it needs neither.
+ALTERNATIVES = (
+    r"\b(?P<negation>(?:without|no|not|never|sin|ni)\s+)?" + _ARTICLE + r"(?P<first>" + _APPLIANCE + r")"
+    r"\s+(?:or|o)\s+(?:in\s+|en\s+)?" + _ARTICLE + r"(?P<second>" + _APPLIANCE + r")"
+)
+
 
 class RequestError(ValueError):
     """The user's input is invalid. The message is safe to show to the user."""
@@ -144,17 +153,40 @@ def validate_request(request: PlanRequest) -> None:
 
 
 def equipment_problems(meal, equipment: frozenset) -> list:
-    """Appliances a recipe mentions that the user said they do not have."""
+    """Appliances a recipe mentions that the user said they do not have.
+
+    Alternatives the user has none of come back joined: "oven or microwave".
+    """
     if not equipment:  # the user did not say: a normal kitchen, nothing to check
         return []
     # Keep the title and individual steps separate, even without punctuation.
     text = ". ".join((meal.recipe_name,) + tuple(meal.steps)).lower()
+    missing = []
+
+    def check_alternatives(clause):
+        # A clause that offers two appliances is checked as a group, then blanked so
+        # its verb ("bake") or the other appliance is not checked again below.
+        match = re.search(ALTERNATIVES, clause)
+        if not match:
+            return clause
+        options = list(dict.fromkeys((_appliance(match["first"]), _appliance(match["second"]))))
+        if not match["negation"] and not set(options) & set(equipment):
+            missing.append(" or ".join(options))
+        return " "
+
+    text = re.sub(r"[^.!?;,\n]+", lambda clause: check_alternatives(clause.group()), text)
     for pattern in NOT_NEEDED:
         text = re.sub(pattern, " ", text)
-    return [
+    missing += [
         appliance for appliance, pattern in EQUIPMENT_WORDS.items()
         if appliance not in equipment and re.search(pattern, text)
     ]
+    return list(dict.fromkeys(missing))
+
+
+def _appliance(word: str) -> str:
+    """The EQUIPMENT value for an appliance word: "horno" -> "oven"."""
+    return next(appliance for appliance, pattern in EQUIPMENT_WORDS.items() if re.search(pattern, word))
 
 
 def extract_json(text: str) -> dict:

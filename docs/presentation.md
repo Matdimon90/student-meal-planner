@@ -14,7 +14,7 @@ The guidelines ask for nine things in the defence, and warn that it is "not simp
 | 6 | Challenges and failures | Oscar | 10% | `docs/failures.md`, the x1 experiment |
 | 7 | Technical and creative choices | Matteo | 10% | `docs/ai-approach.md` table |
 | 8 | Lessons learned | all three, one sentence each | 5% | — |
-| 9 | Next steps | Oscar | 5% | README future improvements, open pull requests |
+| 9 | Next steps | Oscar | 5% | README future improvements |
 
 The one sentence to say out loud early, because it is what the project is about:
 
@@ -37,7 +37,7 @@ The deployed site (link in the README) works too, but only with the access code 
 
 ## 3. The journey
 
-Fridge-photo recognition → meal planning under a budget (`docs/decisions.md`, point 1). Then: catalogue and shopping maths in code (PR #1–#5), the planning pipeline with repair and cheaper retries (#7), the web API and page (#8, #9), prompt versions v1 to v4 with an evaluation script (#6, #10), then one prompt version per measured result (#14–#19), real supermarkets and cross-shop pricing (#35, #36), single-meal swapping (#41), the step-by-step form with prompt v7 and dish photos (#58), the Stripe pass (#60), the roasting check (#63) and the computer layout (#71). The repository is the order we actually did it in.
+Fridge-photo recognition → meal planning under a budget (`docs/decisions.md`, point 1). Then: catalogue and shopping maths in code (PR #1–#5), the planning pipeline with repair and cheaper retries (#7), the web API and page (#8, #9), prompt versions v1 to v4 with an evaluation script (#6, #10), then one prompt version per measured result (#14–#19), real supermarkets and cross-shop pricing (#35, #36), single-meal swapping (#41), the step-by-step form with prompt v7 and dish photos (#58), the Stripe pass (#60), the roasting check (#63, #77), the computer layout (#71) and appliances offered as alternatives (#85). The repository is the order we actually did it in.
 
 ## 4. Git and collaboration — the honest version
 
@@ -45,16 +45,16 @@ Show the network graph, not a slide. Branch per feature, pull request for every 
 
 Two things we must say before we are asked, because they are visible in one click:
 
-- **The commits are not evenly spread.** Matteo has around 83 of them, Oscar around 32, Tom 14. We should say what each of us owns rather than pretend otherwise, and say what we changed in the second half of the project.
+- **The commits are not evenly spread.** At version 1.2.0, Matteo has 90 of the non-merge commits on `main` (his two Git names added together), Oscar 58, Tom 28. We should say what each of us owns rather than pretend otherwise, and say what we changed in the second half of the project.
 - **Most of the early pull requests were merged without a review**, although `CONTRIBUTING.md` line 15 says nobody merges their own pull request without one. Reviews only really start at #37, and `main` now requires one. That is a real process failure and it is more convincing to name it than to hope nobody clicks.
 
 What each of us owns, checkable with `git log --author=`:
 
 | | Owns | Where to look |
 | --- | --- | --- |
-| Matteo | Catalogue, shopping maths, planning pipeline, web API and page, prompt v1–v5, the x1 experiment, real supermarkets and cross-shop comparison, v6 and ablation results in the log, changelog, step-by-step form, dish photos and prompt v7 | PRs #1–#19, #35, #36, #55–#58 |
-| Oscar | Prompt v6, single-meal swap (pipeline, API, button, tests), repo hygiene: licence, changelog, issue templates, CI badge, ablation prompts x2 and x3, this presentation plan, the Stripe pass, the computer layout, documentation updates | PRs #37, #38, #40–#42, #50–#53, #60, #71, #75, #76 |
-| Tom | Our Git mistakes in the failures log, the roasting check for the oven, corrections to the prompt and failures logs, the honest review history | PRs #54, #63, #68, #73 |
+| Matteo | Catalogue, shopping maths, planning pipeline, web API and page, prompt v1–v5, the x1 experiment, real supermarkets and cross-shop comparison, v6 and ablation results in the log, changelog, step-by-step form, dish photos and prompt v7, appliances offered as alternatives, release 1.2.0 | PRs #1–#19, #35, #36, #55–#58, #85, #86 |
+| Oscar | Prompt v6, single-meal swap (pipeline, API, button, tests), the download button, repo hygiene: licence, changelog, issue templates, CI badge, ablation prompts x2 and x3, this presentation plan, the Stripe pass, the computer layout, documentation updates | PRs #37–#42, #50–#53, #60, #71, #75, #76, #79, #81 |
+| Tom | Our Git mistakes in the failures log, the roasting check for the oven and its pan exception, corrections to the prompt and failures logs, the honest review history and the assistants named in the docs, the commit messages with a body, `payment.py` in the README structure | PRs #54, #63, #68, #73, #77, #82–#84 |
 
 ## 5. Prompt engineering — the story to tell
 

@@ -42,7 +42,7 @@ How we work together: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 | Unsplash | Dish photos, free licence, credits in `public/img/dishes/CREDITS.md` |
 | Stripe (test mode) | Optional: a 30-day pass that unlocks plan generation, see "Payment" |
 | Claude (assistant) | Coding assistant, see "AI usage" |
-| ChatGPT (assistant) | Tom's assistant for his documentation and fix pull requests |
+| ChatGPT (assistant) | Coding assistant for some of Tom's pull requests, see "AI usage" |
 
 ## Installation
 
@@ -145,7 +145,7 @@ What works today, end to end:
 - **Swap one meal** without regenerating the week: the slot and the servings are forced by the code, the new meal is validated like a fresh plan, and the whole basket is priced again.
 - **English and Spanish**, recipes included.
 - **The prompt is measured, not felt.** Seven versions scored on the same rubric and the same 10 cases; v4, v6 and the shipped one (v7) all score 58/60. Two ablations (v3 with one rule removed) measure what a single rule is worth. The full history, including the version that scored *lower* than the one before it, is in [`docs/prompt-log.md`](docs/prompt-log.md).
-- **189 automated tests** (`python3 -m pytest`, no API key needed: the model is faked) and they run on every pull request.
+- **201 automated tests** (`python3 -m pytest`, no API key needed: the model is faked) and they run on every pull request.
 
 How we intend to defend all of it: [`docs/presentation.md`](docs/presentation.md).
 

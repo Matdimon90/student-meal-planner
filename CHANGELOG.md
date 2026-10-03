@@ -5,6 +5,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-10-01
+
 ### Added
 - Optional Stripe payment: a pass bought through Stripe Checkout unlocks plan generation for 30 days (`/api/checkout`, `src/payment.py`). Off unless `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` are set; the access code keeps working (#60).
 - Layout for computer screens 1024px wide and more: text beside the dishes on the landing, tabs at the top, the week beside the budget summary. Phones are unchanged (#71).
@@ -12,10 +14,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 - Recipes that roast (`roast`, `asar` and their forms) are now treated as needing an oven, except when they roast in a pan, skillet, griddle or plancha (#63).
 - Roasting in a hot, large or non-stick pan no longer asks for an oven: one or two words may sit before the pan (#77).
+- A recipe that offers two appliances ("in the oven or air fryer") is accepted when the user has one of them; when they have neither, the problem names both (#85).
 - Outdated statements in `docs/prompt-log.md` and `docs/failures.md`: the model speed, the v4 re-run and the files kept out of Git (#68).
 - The README and decision 8 said every pull request was reviewed; #1 to #36 were not, and the failures log now says so (#73).
 - README, `CONTRIBUTING.md` and the design handoff updated for Stripe, ChatGPT and the test count (#75).
 - Decision 12 in `docs/decisions.md`: why a paid pass sits next to the access code (#76).
+- The presentation plan brought up to date with prompt v7, the Stripe pass, the ablation scores and the later pull requests (#79).
+- The failures log lists the commit messages that have a body, against our one-line rule (#82).
+- README, decision 8 and `CONTRIBUTING.md` say ChatGPT prepared some of Tom's pull requests; the failures log says why nothing stopped the early pull requests from being merged without a review (#83).
+- README: `payment.py` in the project structure, the Stripe row of the tools table and the third-supermarket line; the note at the top of the design handoff (#84).
+- Test count, assistant wording, commit-message figures and the presentation numbers after these merges (#86).
 
 ## [1.1.0] — 2026-09-30
 
@@ -81,7 +89,9 @@ First working version, built for the DAT32-91 Prompt Engineering & Git course.
 - Test suite (pytest) and a GitHub Actions workflow that runs it on every pull request.
 - Project docs: AI approach, prompt log, decisions, failures.
 
-[Unreleased]: https://github.com/Matdimon90/student-meal-planner/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/Matdimon90/student-meal-planner/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Matdimon90/student-meal-planner/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/Matdimon90/student-meal-planner/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/Matdimon90/student-meal-planner/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Matdimon90/student-meal-planner/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/Matdimon90/student-meal-planner/releases/tag/v0.1.0
